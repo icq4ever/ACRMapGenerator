@@ -31,6 +31,22 @@
   4. `release <id>`: a versioned zip per stage (Stage IR, stage file, attribution, licence, build instructions)
      as the unit for sharing and for the platform.
   5. A step-by-step guide, `docs/creating-a-stage.md`.
+- **More stages from the same roads:**
+  1. **Reverse variants**: the same centreline driven the other way (e.g. 2000 SS9 Noceta → Muracciole),
+     as `reverse = true` on a Stage IR variant. Start rule, gates, timing and surfaces flipped accordingly.
+  2. **Stage families**: stages sharing roads (Muracciole – Rospigliani 12.5 km, – Noceta 16.5 km,
+     – Pont de Noceta 21 km, – Col de Sorba 48 km) cut from one road network, so the terrain is fetched once.
+- **Road realism:**
+  1. **Side-road stubs** at junctions: the first tens of metres of each side road as road surface, so junctions
+     don't look buried in the terrain.
+  2. **Track limits / respawn boundary** generated from the measured road edges and written into the IR, instead of
+     relying on the host level's ~830 wall pieces (which cover only part of a long stage).
+  3. **Bridge decks and railings** on the bridged `structures`.
+- **Event metadata**: the real date and start time (e.g. 1998-05-05 08:43) as time-of-day / weather hints for the
+  builder.
+- **Stage quality report** per build (Markdown/HTML): length and elevation against the reference, width
+  distribution, low-confidence stretches, bridges, grade audit, map thumbnails. Used for contribution review and,
+  later, the platform's stage pages.
 - **Visual detail:**
   1. Aerial imagery (IGN BD ORTHO) as ground colour. acr-extrastages has a ground-bake input.
   2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
@@ -39,8 +55,11 @@
 - **Pacenotes** generated here from the centreline and written into the IR.
 - **Build without wrappers:** a non-DR2 switch and IR-driven location/registration in an acr-extrastages fork
   (candidates for upstream PRs).
-- **More stages:** other Corsican stages from the template. Other countries need new terrain providers
-  (see [data-sources.md](data-sources.md)). Example: Croatia Rally's organisers share Google My Maps of their stages,
+- **More countries** (terrain providers, see [data-sources.md](data-sources.md)), in this order: Spain / Catalunya
+  (CNIG PNOA, ICGC; CC BY 4.0), Wales (DataMapWales / Environment Agency, up to 25 cm; OGL), Finland (NLS; CC BY 4.0),
+  Estonia (Maa-amet). Plus a **global fallback** (Copernicus GLO-30) for places without open LiDAR, clearly marked as
+  lower quality.
+- **More stages:** other Corsican stages from the template. Example: Croatia Rally's organisers share Google My Maps of their stages,
   but Croatian terrain needs a provider first (check the national geodetic administration, DGU, for open LiDAR/DEM).
 - **Full SS8 in game:** the 16.34 km version (enlarged world ~21 km²) is built but not yet driven.
 - Compare elevation profiles with rally-maps.com automatically. Checked by hand for SS8: 543–919 m there,
@@ -49,5 +68,6 @@
   [data-sources.md](data-sources.md#own-capture-future-eg-korean-roads)) come in as local data providers. This
   covers places without open LiDAR and gives road-surface detail far beyond the 0.5 m DTM. See
   [architecture.md](architecture.md#local-and-own-data-planned).
+- **Docs for newcomers:** a getting-started guide with screenshots and short clips, and a Korean translation.
 - Later: a local web UI on top of `pipeline.build/status`, then the platform (shared catalogue, web detail
   editing, downloads).
