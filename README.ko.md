@@ -41,6 +41,20 @@ Blender에서 결과를 볼 수 있습니다. 차 시점으로 스테이지를 �
 blender --python scripts/blender_view_package.py -- data/<stage>/package/<package id>
 ```
 
+## ACR로 빌드하기
+
+Stage IR은 [acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages)가 본인 PC에서, 본인이 가진 게임을 사용해
+ACR 모드로 빌드합니다. DR2가 아닌 IR을 빌드하려면 우리 포크의 IR 모드가 필요합니다
+([icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), `feature/ir-stages` 브랜치, 작업 중).
+
+```
+pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<id> -Id <AcrId>
+pwsh -File modsdditiveuild.ps1 -Stages workcr\specs-ir\<AcrId>.json -Verify
+```
+
+메뉴의 스테이지 이름, 지역, 국기, 노면, 길이, 경로·고도 그림은 IR의 `stage.json`에서 가져옵니다.
+자세한 내용은 [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages)를 참고하세요.
+
 ## 결과물
 
 모두 `data/<stage>/`에 저장되며, git에는 올라가지 않습니다.

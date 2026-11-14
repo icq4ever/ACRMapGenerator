@@ -43,6 +43,20 @@ Look at the result in Blender, with a drive-through camera (press Space to play)
 blender --python scripts/blender_view_package.py -- data/<stage>/package/<package id>
 ```
 
+## Building into ACR
+
+The Stage IR goes to [acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages), which builds it into an
+ACR mod on your PC with your own copy of the game. Non-DR2 IRs need the IR mode in our fork
+([icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), branch `feature/ir-stages`, in progress):
+
+```
+pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<id> -Id <AcrId>
+pwsh -File modsdditiveuild.ps1 -Stages workcr\specs-ir\<AcrId>.json -Verify
+```
+
+Menu name, location, country flag, surface, length and the route/elevation images come from the IR's `stage.json`.
+Details: [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages).
+
 ## Outputs
 
 Everything goes to `data/<stage>/` (not versioned):

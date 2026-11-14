@@ -52,9 +52,10 @@
   2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
   3. Buildings in villages from BD TOPO.
   4. 0.5 m mesh vertices near the road (ditches, rock steps).
-- **Pacenotes** generated here from the centreline and written into the IR.
-- **Build without wrappers:** a non-DR2 switch and IR-driven location/registration in an acr-extrastages fork
-  (candidates for upstream PRs).
+- **Pacenotes** generated here from the centreline and written into the IR (`pacenotes.tokens`). Priority: the
+  fork's IR mode takes calls only from the IR, so without them a stage has no co-driver.
+- **Build without wrappers:** IR mode in the acr-extrastages fork (`feature/ir-stages`: non-DR2 build via spec
+  `IrDir`, menu registration from `stage.json`, ElevationAtStart fix). Next: test end to end, then upstream PRs.
 - **More countries** (terrain providers, see [data-sources.md](data-sources.md)), in this order: Spain / Catalunya
   (CNIG PNOA, ICGC; CC BY 4.0), Wales (DataMapWales / Environment Agency, up to 25 cm; OGL), Finland (NLS; CC BY 4.0),
   Estonia (Maa-amet). Plus a **global fallback** (Copernicus GLO-30) for places without open LiDAR, clearly marked as

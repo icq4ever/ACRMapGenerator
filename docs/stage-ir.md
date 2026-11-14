@@ -56,21 +56,54 @@ A section gets 80 m of run-up and 150 m of run-out on the real road.
 
 ## Building with acr-extrastages
 
-Verified with acr-extrastages commit `387a4db` (0.1.0-beta.1), unmodified. Our fork,
-[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), is at the same commit and is where
-changes for non-DR2 IRs will go (offered upstream as PRs).
+```
+ACR Map Generator                 acr-extrastages (fork, branch feature/ir-stages)
+build <stage> ──► stage_ir/<id>/ ──► scripts/gen-ir-spec.ps1 -Ir <IR folder> -Id <AcrId>   → stage spec (.json)
+                                 ──► mods/additive/build.ps1 -Stages <spec> [-Verify]      → zz_acrxs_* paks
+                                 ──► install into the game's ~mods (acr-extrastages installer)
+```
 
+The building happens on the player's PC, because it needs the player's own copy of the game. Upstream
+acr-extrastages builds DiRT Rally 2.0 stages only. Our fork,
+[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), adds a non-DR2 mode for IRs made by other
+producers (branch `feature/ir-stages`, in progress, meant for upstream PRs):
 
-- `acr-ref stage-build --additive --bounds 1`, plus `--visuals-vista 1` when `render/vista.glb` exists.
+- A stage spec with `IrDir` (a Stage IR v2 folder) is built without the DR2-only options (DR2 render ground,
+  canopies, ground LOD, default sky). Specs without `IrDir` build exactly as before.
+- `scripts/gen-ir-spec.ps1 -Ir <folder> -Id <AcrId>` writes that spec from the IR's `stage.json`. `-Id` is the ACR
+  row/package name: letters and digits, starting with a letter (e.g. `AmgMurNoc01`).
+
+### What the builder reads from our IR
+
+| IR field | Used for |
+|---|---|
+| `name` | stage name in the menu |
+| `location.name` (`"<region>, <country>"`) | location name, up to the first comma, e.g. "Corsica" |
+| `location.country` (ISO 3166 code) | country and flag (DT_Countries row) |
+| `surface_segments` (our extension) | menu surface: the longest one (asphalt → Tarmac, gravel → Gravel); the new location copies a vanilla location of that surface (Tarmac: Alsace, Gravel: Wales, Snow: Livigno) |
+| `length_m` | menu length |
+| `centreline` + elevations | menu route map, track map and elevation profile (absolute elevations) |
+| `collision.glb` | baked physics and the visible ground |
+| `render/vista.glb` | distant scenery (`--visuals-vista 1` when present) |
+| `pacenotes.tokens` | co-driver calls **only when present**. Without them the host's calls are emptied, so the stage has none. |
+| `objects` | object collision only when present |
+
+All of it can be overridden per spec (location name and row, country, surface, logo, sky, ground offset).
+A generated rally-plate logo is used unless one is given.
+
+### Constraints
+
 - The host level is Hafren South. Its physics world is 2.75 × 3.0 km in plan and only **229 m high**. Mountain
-  stages exceed that height regardless of length, so `--bounds 1` (enlarged world) is required. It worked in
-  game for the 10.6 km Muracciole section, whose world was enlarged to ~2.9 × 4.7 km × 775 m.
+  stages exceed that height regardless of length, so the builder always runs with `--bounds 1` (enlarged world).
+  It worked in game for the 10.6 km Muracciole section, whose world was enlarged to ~2.9 × 4.7 km × 775 m.
 - Visual budget: the builder also draws the visible ground from `collision.glb`, with a 3 M triangle limit per
   stage. That is why the IR uses the lighter mesh spacing (SS8 full: 2.16 M + 0.32 M vista).
-- The upstream build script enables DR2-only options by default. Building a non-DR2 IR currently needs a wrapper
-  that drops them. A switch for this is a candidate change for a fork / upstream PR.
+- Container names are still `zz_acrxs_*`; a configurable prefix is a candidate change.
 - Known limitation: the builder lays respawn walls by reusing the host's ~830 wall pieces. That covers only part
   of a long stage's contour (12 of 33 km on the full SS8).
+
+Verified so far with upstream commit `387a4db` (0.1.0-beta.1) through an external wrapper. The fork's IR mode replaces
+that wrapper.
 
 ## Start line rule
 
