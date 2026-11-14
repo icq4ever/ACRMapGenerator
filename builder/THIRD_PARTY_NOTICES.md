@@ -115,7 +115,7 @@ against CUE4Parse's own `NOTICE`):
 | MemoryPack (+ Core, Generator) | 1.21.4 | MIT |
 | Microsoft.Bcl.Memory | 10.0.12 | MIT |
 | Microsoft.Extensions.* (Logging, DependencyInjection, Options, Primitives, Abstractions) | 8.0.x | MIT |
-| Microsoft.NETCore.Platforms, NETStandard.Library | 1.1.0 / 1.6.1 | Microsoft .NET metapackages (license given only as a Microsoft wlink URL in the .nuspec; no code from them is shipped, not re-verified) |
+| Microsoft.NETCore.Platforms, NETStandard.Library | 1.1.0 / 1.6.1 | Microsoft .NET metapackages (license given only as a Microsoft fwlink URL in the .nuspec; no code from them is shipped, not re-verified) |
 | NAudio.Core | 2.2.1 | MIT |
 | OffiUtils | 3.2.0 | MIT |
 | OggVorbisEncoder | 1.2.2 | MIT |
