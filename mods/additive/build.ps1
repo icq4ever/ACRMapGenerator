@@ -39,11 +39,12 @@ param(
 if ($Prefix -notmatch '^[a-z][a-z0-9_]*$') { throw "-Prefix must be lowercase letters, digits and _: $Prefix" }
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path "$PSScriptRoot\..\..").Path
-$work = Join-Path $root 'work\acr\additive'
+$workRoot = if ($env:ACRXS_WORK) { $env:ACRXS_WORK } else { Join-Path $root 'work' }   # ACRXS_WORK: work folder elsewhere (on the game's drive)
+$work = Join-Path $workRoot 'acr\additive'
 if ($Stages) { $Stages = @($Stages | % { $_ -split ',' } | ? { $_ }) }   # `pwsh -File build.ps1 -Stages a,b` arrives as one string
 if ($Only) { $Only = @($Only | % { $_ -split ',' } | ? { $_ }) }
-if (-not $Stages) { $Stages = @(Join-Path $root 'work\acr\specs') }
-if (-not $Retoc) { $Retoc = Join-Path $root 'work\bin\bin\retoc.exe' }
+if (-not $Stages) { $Stages = @(Join-Path $workRoot 'acr\specs') }
+if (-not $Retoc) { $Retoc = Join-Path $workRoot 'bin\bin\retoc.exe' }
 if (-not (Test-Path $Retoc)) { throw "retoc not found at $Retoc" }
 . (Join-Path $root 'mods\common\vanilla.ps1')
 
@@ -103,7 +104,7 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
     $stageId = $s.Stage
     # IrDir: a Stage IR v2 from another producer (no DR2 data): built without the DR2-only options (docs/stage-ir.md)
     $irMode = [bool]$s.IrDir
-    $ir = if ($irMode) { $s.IrDir } else { Join-Path $root "work\ir\$stageId" }
+    $ir = if ($irMode) { $s.IrDir } else { Join-Path $workRoot "ir\$stageId" }
     if (-not (Test-Path (Join-Path $ir 'stage.json'))) {
         if ($irMode) { throw "${id}: no stage.json in IrDir $ir" }
         throw "${id}: no stage IR at $ir (run dr2-extract stage-ir $stageId --render)"
@@ -115,7 +116,7 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
     Remove-Item -Recurse -Force $mod -ErrorAction SilentlyContinue
 
     # Texture templates live in the override pipeline's legacy-vanilla (same as mods/stage).
-    $stageLegacy = Join-Path $root 'work\acr\legacy-vanilla'
+    $stageLegacy = Join-Path $workRoot 'acr\legacy-vanilla'
     if (-not (Test-Path (Join-Path $stageLegacy 'acr\Content\Environments\WalesS4HafrenSouth\DataAssets\DA_WalesS4HafrenSouthBakedData.uasset'))) {
         throw "${id}: missing $stageLegacy - run mods\stage\build.ps1 -ExtractOnly once"
     }
@@ -183,10 +184,10 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
     }
     # Menu.Images: route map, track map and elevation profile as UI textures under /Game/<Root>/Stages/<Id>/Menu (docs/menu-images.md)
     if ($s.Menu -and $s.Menu.Images) {
-        $menuArgs = @('menu-assets', '--ir', $ir, '--id', $id, '--legacy', $legacy, '--out', $outMod, '--preview', (Join-Path $root "work\acr\menu-preview\$id"),
+        $menuArgs = @('menu-assets', '--ir', $ir, '--id', $id, '--legacy', $legacy, '--out', $outMod, '--preview', (Join-Path $workRoot "acr\menu-preview\$id"),
             '--root', "/Game/$contentRoot")
         if ($s.Menu.Art) {
-            $art = Join-Path $root "work\dr2\menu-art\frontend\streamed_textures\loading\$($s.Menu.Art).tpk"
+            $art = Join-Path $workRoot "dr2\menu-art\frontend\streamed_textures\loading\$($s.Menu.Art).tpk"
             if (-not (Test-Path $art)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
             if (-not (Test-Path $art)) { throw "${id}: missing DR2 loading art $art" }
             $menuArgs += @('--art', $art)
@@ -239,8 +240,8 @@ if ($need) {
 }
 Write-VanillaStamp $legacy $paks
 
-$tool = Join-Path $root 'work\bin\acr-additive\acr-additive.exe'
-$acrRef = Join-Path $root 'work\bin\acr-ref\acr-ref.exe'
+$tool = Join-Path $workRoot 'bin\acr-additive\acr-additive.exe'
+$acrRef = Join-Path $workRoot 'bin\acr-ref\acr-ref.exe'
 if (-not $SkipToolBuild) {
     Run dotnet build (Join-Path $root 'tools\acr-additive\AcrAdditive.csproj') -c Release -o (Split-Path $tool) --nologo -v q
     Run dotnet build (Join-Path $root 'tools\acr-ref\AcrRef.csproj') -c Release -o (Split-Path $acrRef) --nologo -v q
@@ -297,7 +298,7 @@ if (-not $SkipRegistry) {
     $regArgs = @('registry', '--legacy', $legacy)
     # stacked base: other mods' tables, with imports they lost in conversion repaired from the vanilla tables
     if ($RegistryBase) { $regArgs = @('registry', '--legacy', (Resolve-Path $RegistryBase).Path, '--repair-from', $legacy) }
-    Run $tool @regArgs --out $reg --ir-root (Join-Path $root 'work\ir') @regSpecs
+    Run $tool @regArgs --out $reg --ir-root (Join-Path $workRoot 'ir') @regSpecs
     # new locations: tile (DR2 loading art) and rally-plate logo textures under /Game/AcrXs/Locations/<Row>/ in the registry container
     $logoDir = Join-Path $work 'location-logos'
     & pwsh -NoProfile -File (Join-Path $root 'scripts\menu-location-logos.ps1') -Specs ($regSpecs -join ';') -Out $logoDir | Out-Host
@@ -312,11 +313,11 @@ if (-not $SkipRegistry) {
         & pwsh -NoProfile -File (Join-Path $root 'scripts\location-logo-png.ps1') -In $ownLogos[$row] -Out (Join-Path $logoDir "$row.png") | Out-Host
         if ($LASTEXITCODE -ne 0) { throw "location-logo-png.ps1 failed for $row" }
     }
-    $artDir = Join-Path $root 'work\dr2\menu-art\frontend\streamed_textures\loading'
+    $artDir = Join-Path $workRoot 'dr2\menu-art\frontend\streamed_textures\loading'
     # DR2 loading art is read only for generated tiles (Location.TileArt); IR-only registries need no DR2 install
     $needArt = @($regSpecs | ? { (Get-Content $_ -Raw | ConvertFrom-Json).Location.TileArt })
     if ($needArt -and -not (Test-Path $artDir)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
-    Run $tool menu-locations --legacy $legacy --out $reg --art-dir $artDir --logo-dir $logoDir --preview (Join-Path $root 'work\acr\menu-preview\locations') @regSpecs
+    Run $tool menu-locations --legacy $legacy --out $reg --art-dir $artDir --logo-dir $logoDir --preview (Join-Path $workRoot 'acr\menu-preview\locations') @regSpecs
     # any earlier registry of this prefix, whatever its priority suffix
     Get-ChildItem $dist -File -Filter "${Prefix}_registry*" | Remove-Item -ErrorAction SilentlyContinue
     Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist "$regName.utoc")
@@ -334,7 +335,7 @@ if ($Verify -and -not $SkipRegistry) {
     $specDir = Join-Path $check 'specs'
     New-Item -ItemType Directory -Force $specDir | Out-Null
     $regSpecs | % { Copy-Item $_ $specDir }
-    Run $tool verify --vanilla $baseGame --game $check --spec $specDir --ir-root (Join-Path $root 'work\ir') --out (Join-Path $check 'verify.txt') --prefix $Prefix
+    Run $tool verify --vanilla $baseGame --game $check --spec $specDir --ir-root (Join-Path $workRoot 'ir') --out (Join-Path $check 'verify.txt') --prefix $Prefix
     $rtPaks = Join-Path $check 'roundtrip-paks'
     New-Item -ItemType Directory -Force $rtPaks | Out-Null
     Copy-Item (Join-Path $paks 'global.*'), (Join-Path $dist "$regName.*") $rtPaks

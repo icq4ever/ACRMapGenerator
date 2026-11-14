@@ -10,7 +10,8 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
-$out = Join-Path $root 'work\dr2\menu-art'
+$workRoot = if ($env:ACRXS_WORK) { $env:ACRXS_WORK } else { Join-Path $root 'work' }   # ACRXS_WORK: work folder elsewhere (on the game's drive)
+$out = Join-Path $workRoot 'dr2\menu-art'
 $dir = Join-Path $out 'frontend\streamed_textures\loading'
 if (-not $Force -and (Get-ChildItem $dir -Filter '*.tpk' -ErrorAction SilentlyContinue | Select-Object -First 1)) { return }
 $exe = Join-Path $root 'tools\dr2-extract\bin\Release\net10.0\dr2-extract.exe'

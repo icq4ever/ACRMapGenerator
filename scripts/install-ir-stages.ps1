@@ -34,20 +34,21 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
+$workRoot = if ($env:ACRXS_WORK) { $env:ACRXS_WORK } else { Join-Path $root 'work' }   # ACRXS_WORK: work folder elsewhere (on the game's drive)
 if ($Prefix -notmatch '^[a-z][a-z0-9_]*$') { throw "-Prefix must be lowercase letters, digits and _: $Prefix" }
-if (-not $Retoc) { $Retoc = Join-Path $root 'work\bin\bin\retoc.exe' }
+if (-not $Retoc) { $Retoc = Join-Path $workRoot 'bin\bin\retoc.exe' }
 if (-not (Test-Path $Retoc)) { throw "retoc not found at $Retoc" }
-if (-not $Stages) { $Stages = @(Join-Path $root 'work\acr\specs-ir') }
+if (-not $Stages) { $Stages = @(Join-Path $workRoot 'acr\specs-ir') }
 $Stages = @($Stages | % { $_ -split ',' } | ? { $_ })
 
 $paksDir = Join-Path $Game 'acr\Content\Paks'
 if (-not (Test-Path $paksDir)) { throw "no ACR install at $Game (set -Game or ACR_GAME_DIR)" }
-$installDir = Join-Path $root 'work\acr\install'
+$installDir = Join-Path $workRoot 'acr\install'
 $mods = if ($DryRun) { Join-Path $installDir 'dry-run-mods' } else { Join-Path $paksDir '~mods' }
 $statePath = Join-Path $installDir 'state.json'
-$work = Join-Path $root 'work\acr\additive'
+$work = Join-Path $workRoot 'acr\additive'
 $dist = Join-Path $work 'dist'
-$tool = Join-Path $root 'work\bin\acr-additive\acr-additive.exe'
+$tool = Join-Path $workRoot 'bin\acr-additive\acr-additive.exe'
 New-Item -ItemType Directory -Force $installDir | Out-Null
 
 function Run([string]$exe) {
@@ -205,7 +206,7 @@ if ($Uninstall) {
 # ---------------------------------------------------------------- install
 Assert-GameClosed
 if (-not $env:ACR_USMAP -and -not (Test-Path 'C:\Dumper-7\5.6.1-0+UE5-acr\Mappings\5.6.1-0+UE5-acr.usmap')) {
-    $usmap = & (Join-Path $root 'work\bin\bin\acr-mappings.exe') path --game $Game 2>$null
+    $usmap = & (Join-Path $workRoot 'bin\bin\acr-mappings.exe') path --game $Game 2>$null
     if ($LASTEXITCODE -eq 0 -and $usmap) { $env:ACR_USMAP = ($usmap | Select-Object -Last 1).Trim() }
 }
 $env:ACR_GAME_DIR = $Game

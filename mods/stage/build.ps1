@@ -96,8 +96,9 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path "$PSScriptRoot\..\..").Path
-$work = Join-Path $root 'work\acr'
-if (-not $Retoc) { $Retoc = Join-Path $root 'work\bin\bin\retoc.exe' }
+$workRoot = if ($env:ACRXS_WORK) { $env:ACRXS_WORK } else { Join-Path $root 'work' }   # ACRXS_WORK: work folder elsewhere (on the game's drive)
+$work = Join-Path $workRoot 'acr'
+if (-not $Retoc) { $Retoc = Join-Path $workRoot 'bin\bin\retoc.exe' }
 if (-not (Test-Path $Retoc)) { throw "retoc not found at $Retoc" }
 . (Join-Path $root 'mods\common\vanilla.ps1')
 # every game input (extraction, surface registry, verification) comes from this view: vanilla containers only, no ~mods
@@ -133,7 +134,7 @@ foreach ($k in $host_.Keys) {
 }
 Write-VanillaStamp $legacy $paks
 
-$acrRef = Join-Path $root 'work\bin\acr-ref\acr-ref.exe'
+$acrRef = Join-Path $workRoot 'bin\acr-ref\acr-ref.exe'
 Run dotnet build (Join-Path $root 'tools\acr-ref\AcrRef.csproj') -c Release -o (Split-Path $acrRef) --nologo -v q
 # surfaces known to the Kunos track physics; colliders with any other physical material crash the stage load
 $registry = Join-Path $legacy 'DA_PhysMaterialsMappingCommon.json'
@@ -143,7 +144,7 @@ if (-not (Test-Path $registry)) {
 Run $acrRef surface-map-check --map (Join-Path $root 'config\surface-map.toml') --registry $registry
 if ($ExtractOnly) { return }
 
-$ir = Join-Path $root "work\ir\$Stage"
+$ir = Join-Path $workRoot "ir\$Stage"
 if (-not (Test-Path (Join-Path $ir 'stage.json'))) { throw "no stage IR at $ir (run dr2-extract stage-ir $Stage)" }
 $tag = if ($Tag) { $Tag } elseif ($Version -eq 'v1') { $Short } else { "$Short-$Version" }
 $mod = Join-Path $work "mod-$tag"

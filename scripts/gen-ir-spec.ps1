@@ -19,7 +19,7 @@
 param(
     [Parameter(Mandatory)][string]$Ir,          # Stage IR folder (holds stage.json)
     [Parameter(Mandatory)][string]$Id,          # ACR row / package name of the stage: letters and digits, e.g. AmgMurNoc01
-    [string]$OutDir = (Join-Path (Split-Path $PSScriptRoot) 'work\acr\specs-ir'),
+    [string]$OutDir = (Join-Path $(if ($env:ACRXS_WORK) { $env:ACRXS_WORK } else { Join-Path (Split-Path $PSScriptRoot) 'work' }) 'acr\specs-ir'),
     # content root of the stage's packages, /Game/<ContentRoot>/Stages/<Id>/... (default AcrXs, or $env:ACRXS_CONTENT_ROOT)
     [string]$ContentRoot = $(if ($env:ACRXS_CONTENT_ROOT) { $env:ACRXS_CONTENT_ROOT } else { 'AcrXs' }),
     [string]$LocationRow,                       # DT_TracksLocations row (default: the location name in PascalCase)

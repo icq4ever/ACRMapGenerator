@@ -9,7 +9,9 @@ The DR2 path (`config/stages.toml`, `scripts/gen-stage-specs.ps1`, the launcher)
 ## One-time setup
 
 - .NET 10 SDK, PowerShell 7, Rust (rustup) and git, as in CONTRIBUTING.md.
-- Put the checkout **on the game's drive**: the vanilla view is built from hard links to the game's paks.
+- The work folder must be **on the game's drive**: the vanilla view is built from hard links to the game's paks. It is
+  `work\` in the checkout unless `$env:ACRXS_WORK` points elsewhere (e.g. `E:\acr_work` when the checkout is on C:).
+  Every path below written as `work\...` is under that folder.
 - retoc and the mappings tool into `work\bin\bin`:
 
   ```powershell
