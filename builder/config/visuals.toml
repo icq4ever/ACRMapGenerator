@@ -107,7 +107,9 @@ road_stretch_min_fraction = 0.95  # offline check: road triangles whose UV0 scal
 # ground steeper than bake_max_slope_deg gets a tiling rock texture (box UVs) instead of the smeared top-down image
 posts_spacing_m = 50
 posts_colour = [225, 225, 220]
-bake_max_slope_deg = 40
+# Off: on the first IR stage the "steep" ground was mostly forested 35-degree hillside whose LiDAR triangles exceed 40
+# degrees locally (LiDAR HD cross-sections), so whole slopes turned into bare rock walls. Set the key to enable.
+# bake_max_slope_deg = 40
 steep_texture = "/Game/Props/MonteCarloProps/MonBolRockfaces/T_Rock_Surface_rmshykp0_2K_D"   # 2048 DXT1 sRGB, not VT
 steep_tile_m = 4
 
@@ -118,7 +120,7 @@ steep_tile_m = 4
 # 5.5 m x 100 m). Vertex colour: 55% of the road-centre vertices of three Munster road meshes are (0, 0, 0, 0); G rises
 # in patches (variation), A stays low.
 # MI_MunsterAsphalt1 (M_AsphaltMaster_Adv: dust, grime, tyre marks, patches) read dusty brown in game on the first IR test;
-# the Simple variant (M_AsphaltSimple: the same Alsace asphalt textures, macro variation only) is under test.
+# the Simple variant (M_AsphaltSimple: the same Alsace asphalt textures, macro variation only) reads as grey asphalt.
 road = "/Game/Environments/AlsaceS4Saverne/AsphaltMaterial/MI_SaverneAsphalt1Simple"
 road_uv0_across_m = 2.3
 road_uv0_along_m = 3.9
