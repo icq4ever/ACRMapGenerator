@@ -22,6 +22,8 @@ FORBIDDEN_NAME_PARTS = ("oo2core",)  # Oodle libraries
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 IMAGE_DIRS = ("assets/", "docs/media/")  # images allowed only here (no game art)
 FORBIDDEN_DIRS = ("data/", "private/")
+TEXT_EXT = {".md", ".py", ".toml", ".yml", ".yaml", ".txt", ".json", ".ps1", ".cfg", ".ini"}
+ALLOWED_CONTROL = {9, 10, 13}  # tab, newline, carriage return
 
 
 def main() -> int:
@@ -42,6 +44,11 @@ def main() -> int:
             size = len(subprocess.run(["git", "cat-file", "-p", f":{f}"], capture_output=True, check=True).stdout)
         except subprocess.CalledProcessError:
             continue  # deleted in the working tree
+        if ext in TEXT_EXT or p.name.startswith("."):
+            data = subprocess.run(["git", "cat-file", "-p", f":{f}"], capture_output=True, check=True).stdout
+            bad = sorted({b for b in data if b < 32 and b not in ALLOWED_CONTROL})
+            if bad:
+                problems.append(f"{f}: control characters {[hex(b) for b in bad]} (a mangled backslash?)")
         if size > MAX_BYTES and f != "uv.lock":
             problems.append(f"{f}: {size / 1e6:.1f} MB (limit {MAX_BYTES / 1e6:.0f} MB)")
     for line in problems:
