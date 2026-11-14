@@ -49,10 +49,13 @@
   distribution, low-confidence stretches, bridges, grade audit, map thumbnails. Used for contribution review and,
   later, the platform's stage pages.
 - **Visual detail:**
-  1. Aerial imagery (IGN BD ORTHO) as ground colour: `imagery` step + `render/ground_bake` in the IR, drawn by the
-     builder on the collision ground (2026-11-15, in-game test pending). Road: Alsace asphalt on tarmac stages.
-     Next: imagery on the vista ring.
-  2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
+  1. Aerial imagery (IGN BD ORTHO) as ground colour ✅ `imagery` step + `render/ground_bake` in the IR, drawn by the
+     builder on the collision ground; tarmac stages get Alsace asphalt (simple variant). In game (2026-11-15): reads
+     well at mid distance, soft close to the car (20 cm source). Steep ground smears; a rock texture on it was worse
+     (forested slopes turned into bare walls) and is off. Next: imagery on the vista ring.
+  2. **Trees next** (biggest gap): LiDAR HD cross-sections at SS8 1.8-2.0 km show a road shelf on a ~35° slope under
+     10-20 m forest, crowns over the road, no guard rail. Place trees from the canopy height model (MNH, 50 cm, same
+     WMS-R as the terrain) as IR objects with trunk collision; the game has Mediterranean pines (e.g. Aleppo pine).
   3. Buildings in villages from BD TOPO.
   4. 0.5 m mesh vertices near the road (ditches, rock steps).
 - **Pacenotes** ✅ generated from the smoothed LiDAR centreline into `pacenotes.tokens`, with exact corner spans.
