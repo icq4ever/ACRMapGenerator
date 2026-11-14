@@ -75,6 +75,19 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
 - [docs/licensing.md](docs/licensing.md): licences of this repo, the source data and built stages
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to add stages, data sources and code
 
+## Disclaimer
+
+- **Unofficial.** This is a fan-made tool. It is not affiliated with or endorsed by Kunos Simulazioni,
+  Supernova Games, 505 Games, the FIA/WRC, or the organisers of any rally. Assetto Corsa Rally and all event
+  names are trademarks of their respective owners. Stage files mention events only as factual references.
+- **Not for real-world use.** Stages approximate real public roads from open data and may be inaccurate. Do not use
+  them for navigation. These roads are open to traffic outside closed rally events, so respect local laws.
+- **Game mods at your own risk.** Building and installing a stage uses your own copy of the game. Mods can stop
+  working after game updates, and how they may be shared is governed by the game's terms. Back up before installing.
+- **Be kind to data services.** IGN Géoplateforme and the Overpass API are free public services. The pipeline
+  caches everything it downloads; avoid forced re-downloads and large batch runs.
+- **No warranty.** The software is provided "as is" (see the licences).
+
 ## Support
 
 If you find ACR Map Generator useful, consider supporting its development:
