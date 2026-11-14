@@ -9,6 +9,7 @@ internal sealed class StageSpec
     public string Id = "";                 // DT_Levels and DT_Tracks row; prefix rows with "AcrXs" to stay clear of vanilla keys
     public string Level = "";              // package of the stage's own level, e.g. /Game/AcrXs/Stages/AcrXsTest/AcrXsTest
     public string? Stage;                  // DR2 stage id (work/ir/<Stage>); null for clone-only prototypes
+    public string? IrDir;                  // Stage IR folder from another producer (no DR2 data); read instead of <ir-root>/<Stage>
     public LocationSpec Location = new();
     public TrackSpec Track = new();
     public List<VariantSpec> Variants = new();
@@ -53,21 +54,32 @@ internal sealed class StageSpec
 
     /// Loads a spec. Stage display names are not stored in the (committed) specs: a ported stage's empty Track.Name /
     /// Variants[].Name / StageName are filled from the user's own DR2 localisation, i.e. the `name` of work/ir/<Stage>/stage.json
-    /// (written by `dr2-extract stage-ir` from the installed game's language_eng.lng), when `irRoot` is given.
+    /// (written by `dr2-extract stage-ir` from the installed game's language_eng.lng), when `irRoot` is given. An IrDir spec reads
+    /// the `name` of <IrDir>/stage.json the same way, with or without `irRoot`.
     public static StageSpec Load(string path, string? irRoot = null)
     {
         var s = JsonConvert.DeserializeObject<StageSpec>(File.ReadAllText(path)) ?? throw new InvalidDataException(path);
-        if (irRoot is not null) s.ResolveNames(irRoot);
+        if (irRoot is not null || s.IrDir is not null) s.ResolveNames(irRoot);
         return s;
     }
 
-    public void ResolveNames(string irRoot)
+    /// The stage's IR file: <IrDir>/stage.json, else <irRoot>/<Stage>/stage.json; null when neither is known.
+    public string? StageJson(string? irRoot) =>
+        IrDir is not null ? Path.Combine(IrDir, "stage.json")
+        : Stage is not null && irRoot is not null ? Path.Combine(irRoot, Stage, "stage.json")
+        : null;
+
+    public void ResolveNames(string? irRoot)
     {
-        if (Stage is null || (Track.Name.Length > 0 && Variants.All(v => v.Name.Length > 0))) return;
-        var json = Path.Combine(irRoot, Stage, "stage.json");
-        if (!File.Exists(json)) throw new FileNotFoundException($"{Id}: stage names come from the DR2 localisation in {json} (run scripts\\prepare-stage-data.ps1)");
+        if (Track.Name.Length > 0 && Variants.All(v => v.Name.Length > 0)) return;
+        if (StageJson(irRoot) is not { } json) return;
+        if (!File.Exists(json))
+            throw new FileNotFoundException(IrDir is not null ? $"{Id}: no stage.json in IrDir {IrDir}"
+                : $"{Id}: stage names come from the DR2 localisation in {json} (run scripts\\prepare-stage-data.ps1)");
         var name = ((string?)Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(json))["name"])?.Trim();
-        if (string.IsNullOrEmpty(name)) throw new InvalidDataException($"{json}: no stage name (DR2 language_eng.lng has no lng_<location>_route_<n> entry)");
+        if (string.IsNullOrEmpty(name))
+            throw new InvalidDataException(IrDir is not null ? $"{json}: no stage name"
+                : $"{json}: no stage name (DR2 language_eng.lng has no lng_<location>_route_<n> entry)");
         // track card: the stage name without the Forward / Reverse / Sprint suffix (the location already shows the country)
         if (Track.Name.Length == 0)
             Track.Name = System.Text.RegularExpressions.Regex.Replace(System.Text.RegularExpressions.Regex.Replace(name, @"\s+(Forward|Reverse)$", ""), @"\s+Sprint$", "");
@@ -266,8 +278,8 @@ internal static class Registry
     {
         int I(string type, string prop) => schema.IndexOf(type, prop);
         var m = s.Menu!;
-        if (s.Stage is null || irRoot is null) throw new InvalidOperationException($"{s.Id}: Menu needs Stage and --ir-root");
-        var route = new StageRoute(Path.Combine(irRoot, s.Stage, "stage.json"));
+        var stageJson = s.StageJson(irRoot) ?? throw new InvalidOperationException($"{s.Id}: Menu needs IrDir, or Stage and --ir-root");
+        var route = new StageRoute(stageJson);
         var vars = t["TracksVariants"];
         var tracks = t["Tracks"];
         if (m.Images)

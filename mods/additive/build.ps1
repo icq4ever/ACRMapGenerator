@@ -283,7 +283,9 @@ if (-not $SkipRegistry) {
     & pwsh -NoProfile -File (Join-Path $root 'scripts\menu-location-logos.ps1') -Specs ($regSpecs -join ';') -Out $logoDir | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'menu-location-logos.ps1 failed' }
     $artDir = Join-Path $root 'work\dr2\menu-art\frontend\streamed_textures\loading'
-    if (-not (Test-Path $artDir)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
+    # DR2 loading art is read only for generated tiles (Location.TileArt); IR-only registries need no DR2 install
+    $needArt = @($regSpecs | ? { (Get-Content $_ -Raw | ConvertFrom-Json).Location.TileArt })
+    if ($needArt -and -not (Test-Path $artDir)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
     Run $tool menu-locations --legacy $legacy --out $reg --art-dir $artDir --logo-dir $logoDir --preview (Join-Path $root 'work\acr\menu-preview\locations') @regSpecs
     Remove-Item (Join-Path $dist 'zz_acrxs_registry_P.*') -ErrorAction SilentlyContinue
     Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist 'zz_acrxs_registry_P.utoc')
