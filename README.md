@@ -56,7 +56,8 @@ pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<
 pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verify
 ```
 
-Menu name, location, country flag, surface, length and the route/elevation images come from the IR's `stage.json`.
+Stages from this tool are packed as `zz_acrmg_*`. Menu name, location, country flag, surface, length and the
+route/elevation images come from the IR's `stage.json`.
 Details: [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages).
 
 ## Outputs

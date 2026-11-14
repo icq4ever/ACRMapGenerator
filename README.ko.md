@@ -54,7 +54,8 @@ pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<
 pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verify
 ```
 
-메뉴의 스테이지 이름, 지역, 국기, 노면, 길이, 경로·고도 그림은 IR의 `stage.json`에서 가져옵니다.
+이 도구로 만든 스테이지는 `zz_acrmg_*` 파일로 만들어집니다. 메뉴의 스테이지 이름, 지역, 국기, 노면, 길이,
+경로·고도 그림은 IR의 `stage.json`에서 가져옵니다.
 자세한 내용은 [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages)를 참고하세요.
 
 ## 결과물
