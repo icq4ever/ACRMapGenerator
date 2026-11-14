@@ -23,7 +23,15 @@ By submitting a contribution you agree that it is licensed under the licence of 
   (Street View, Google 3D Tiles, ...).
 - **Shipped geometry comes from LiDAR/DEM, not OSM.** OSM may locate the route and suggest attributes. It must not
   end up in exported geometry.
-- **No game files.** This tool never reads or writes game data. Anything game-side belongs in acr-extrastages.
+- **No game files, no generated data.** This tool never reads or writes game data. Don't commit game assets, `.pak` /
+  `.ucas` / `.utoc` / `.uasset` files, `.usmap` mappings, Oodle libraries, screenshots showing game art, logs with
+  personal paths, or anything from `data/` (downloaded geodata, meshes, Stage IR). `scripts/check_repo_content.py`
+  enforces this for tracked files.
+- **Stops at Stage IR.** Building, packaging and installing game mods is acr-extrastages' job. Don't add tooling here
+  that builds, bundles or uploads game paks.
+- **Offline, single-player.** Stages are meant for offline, single-player play, the same policy as acr-extrastages.
+  Don't add features aimed at multiplayer, leaderboards or competitive modes, or at hiding stages from the game or
+  from anti-cheat.
 - **Structure first.** New data goes in as a provider of a data kind. New processing goes in as a pipeline step with
   its parameters, dependencies and code files, so fingerprints stay correct.
 - **Stage names:** `display_name` uses place names only, never event trademarks.
@@ -32,9 +40,13 @@ By submitting a contribution you agree that it is licensed under the licence of 
 
 ```
 uv sync
-uv run pytest            # tests run offline on synthetic data
+uv run pytest                                # tests run offline on synthetic data
 uv run ruff check . && uv run ruff format .
+uv run python scripts/check_repo_content.py  # no game data, generated data or big files
 ```
+
+CI runs the same checks on every push and pull request. User-visible changes go into `CHANGELOG.md`
+under `[Unreleased]`.
 
 For a stage contribution, run `uv run acr-map-generator validate <id>` and `build <id>`. In the pull request,
 say how you checked the result, e.g. with the Blender viewer or in game.

@@ -74,6 +74,7 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
 - [docs/roadmap.md](docs/roadmap.md): status and next steps
 - [docs/licensing.md](docs/licensing.md): licences of this repo, the source data and built stages
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to add stages, data sources and code
+- [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 
 ## Disclaimer
 
@@ -84,6 +85,8 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
   them for navigation. These roads are open to traffic outside closed rally events, so respect local laws.
 - **Game mods at your own risk.** Building and installing a stage uses your own copy of the game. Mods can stop
   working after game updates, and how they may be shared is governed by the game's terms. Back up before installing.
+- **Offline, single-player.** Stages are meant for offline, single-player play. Stay out of online, leaderboard and
+  competitive modes while modded stages are installed.
 - **Be kind to data services.** IGN Géoplateforme and the Overpass API are free public services. The pipeline
   caches everything it downloads; avoid forced re-downloads and large batch runs.
 - **No warranty.** The software is provided "as is" (see the licences).

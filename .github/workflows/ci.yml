@@ -1,0 +1,38 @@
+name: CI
+
+# Lint and offline tests. No data is downloaded and no stage is built here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: content guard, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        run: pipx install uv
+
+      - name: Repository content guard (no game data, generated data, big blobs)
+        run: uv run --no-project python scripts/check_repo_content.py
+
+      - name: Version in pyproject.toml has a CHANGELOG.md section
+        run: |
+          v=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          grep -q "^## \[$v\]" CHANGELOG.md || { echo "CHANGELOG.md has no '## [$v]' section"; exit 1; }
+
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest -q
