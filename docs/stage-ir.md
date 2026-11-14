@@ -59,37 +59,70 @@ A section gets 80 m of run-up and 150 m of run-out on the real road.
 ```
 ACR Map Generator                 acr-extrastages (fork, branch feature/ir-stages)
 build <stage> ──► stage_ir/<id>/ ──► scripts/gen-ir-spec.ps1 -Ir <IR folder> -Id <AcrId>   → stage spec (.json)
-                                 ──► mods/additive/build.ps1 -Stages <spec> [-Verify]      → zz_acrxs_* paks
-                                 ──► install into the game's ~mods (acr-extrastages installer)
+                                 ──► mods/additive/build.ps1 -Stages <spec> [-Verify]      → zz_acrmg_* paks
+                                 ──► install into the game's ~mods
 ```
 
 The building happens on the player's PC, because it needs the player's own copy of the game. Upstream
 acr-extrastages builds DiRT Rally 2.0 stages only. Our fork,
-[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), adds a non-DR2 mode for IRs made by other
-producers (branch `feature/ir-stages`, in progress, meant for upstream PRs):
+[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), adds an IR mode for IRs from other producers
+(branch `feature/ir-stages`, meant for upstream PRs). A stage spec with `IrDir` is built without the DR2-only options,
+and `scripts/gen-ir-spec.ps1` writes that spec from the IR's `stage.json`. `-Id` is the ACR row/package name: letters
+and digits, starting with a letter (e.g. `AmgMurNoc01`). Stages from this producer go under `/Game/AcrMg` in
+`zz_acrmg_*` containers.
 
-- A stage spec with `IrDir` (a Stage IR v2 folder) is built without the DR2-only options (DR2 render ground,
-  canopies, ground LOD, default sky). Specs without `IrDir` build exactly as before.
-- `scripts/gen-ir-spec.ps1 -Ir <folder> -Id <AcrId>` writes that spec from the IR's `stage.json`. `-Id` is the ACR
-  row/package name: letters and digits, starting with a letter (e.g. `AmgMurNoc01`).
+Status (2026-11-15): the Muracciole–Noceta 10.6 km section builds as `AmgMurNoc01` with all offline checks passing
+(67/67). The menu shows location "Corsica" (France flag, Tarmac), the IR name, 10.58 km, elevations 561–910 m and
+generated route map / height profile. The fork's IR-mode build is not yet tested in game. (Earlier builds through an
+external wrapper drove start to finish in game.)
 
-### What the builder reads from our IR
+### The producer contract
 
-| IR field | Used for |
+The authoritative contract is the fork's `docs/stage-ir.md`, section **"IRs from other producers (no DR2 data)"**.
+Summary for this producer:
+
+| IR key | Used for | We write |
+|---|---|---|
+| `schema`, `version` | must be `acrxs/stage-ir`, ≥ 2 | yes |
+| `name` | track and stage name in the menu | `display_name` (+ section range) |
+| `length_m` | menu length | yes |
+| `coordinates`, `y` | placement; `y` is **absolute elevation** for the menu's min / max / start elevation | yes |
+| `centreline`, `gates`, `timing` | placement, splines, start / splits / finish, respawn, menu maps and height profile | yes |
+| `collision` + `collision.glb`, `surfaces[]` | physics ground; material names are surface codes mapped to `PM_*` | yes |
+| `location.name` | menu location: the text before the first comma ("Corsica, FR" → "Corsica") | `"<region>, <country>"` |
+| `location.country` | flag (ISO 3166 alpha-2) | yes |
+| `surface_segments[]` | the longest `surface` picks the menu surface and the vanilla location copied for it | yes (our extension) |
+| `sources.attribution[]` | the location's info-box text ("Corsica. Built from …") | from the manifest |
+| `render/vista.glb` | distant terrain ring | when the `vista` step ran |
+| `pacenotes.tokens[]` | co-driver calls (format below); **without them the stage has no calls** | not yet |
+| `objects` | object collision | not yet |
+
+Ignored by the build (kept for our own use): `structures`, `links`, `validation`, `triggers`, `sources` beyond
+`attribution`, `location.id` / `archive` / `route_index`.
+
+### Pace notes format (to implement)
+
+`pacenotes.tokens[]`, one object per call, in driving order:
+
+| field | meaning |
 |---|---|
-| `name` | stage name in the menu |
-| `location.name` (`"<region>, <country>"`) | location name, up to the first comma, e.g. "Corsica" |
-| `location.country` (ISO 3166 code) | country and flag (DT_Countries row) |
-| `surface_segments` (our extension) | menu surface: the longest one (asphalt → Tarmac, gravel → Gravel); the new location copies a vanilla location of that surface (Tarmac: Alsace, Gravel: Wales, Snow: Livigno) |
-| `length_m` | menu length |
-| `centreline` + elevations | menu route map, track map and elevation profile (absolute elevations) |
-| `collision.glb` | baked physics and the visible ground |
-| `render/vista.glb` | distant scenery (`--visuals-vista 1` when present) |
-| `pacenotes.tokens` | co-driver calls **only when present**. Without them the host's calls are emptied, so the stage has none. |
-| `objects` | object collision only when present |
+| `call`, `subcall` | ordering: `call` increases along the route, `subcall` orders the parts of one call (from 1) |
+| `gate_distance` | where the call is read, on the **`gates[].distance` scale** (not from the start line), typically 50–150 m before the corner |
+| `kind` | `corner`, `distance` or `finish` |
+| `direction`, `severity` | corners: `left` / `right`; `"6"` (fastest) … `"1"`, `"square"`, `"hairpin"` |
+| `distance_call_m` | distances: the spoken distance (20 / 30 become "And", 40+ become DistNN) |
+| `modifiers` | optional, only `"dont_cut"` is mapped |
+| `distance_m` | optional, metres from the start line (report only) |
 
-All of it can be overridden per spec (location name and row, country, surface, logo, sky, ground offset).
-A generated rally-plate logo is used unless one is given.
+The corner's position and length in game come from the built road geometry, so only the reading point matters.
+
+### Menu images (planned on the builder side)
+
+Optional files the builder will pick up when present (any size, cover-cropped): `menu/logo.png` (location plate,
+485 × 218, transparent), `menu/tile.png` (portrait location tile, 406 × 737), `menu/art.png` (landscape ≥ 1920 × 1080,
+no text near the edges; cropped to backdrop, banner and lobby thumbnail). Stages sharing a location should ship the
+same logo and tile. This producer could render `art.png` from a hillshade now, and from aerial imagery once that
+provider exists.
 
 ### Constraints
 
@@ -98,7 +131,6 @@ A generated rally-plate logo is used unless one is given.
   It worked in game for the 10.6 km Muracciole section, whose world was enlarged to ~2.9 × 4.7 km × 775 m.
 - Visual budget: the builder also draws the visible ground from `collision.glb`, with a 3 M triangle limit per
   stage. That is why the IR uses the lighter mesh spacing (SS8 full: 2.16 M + 0.32 M vista).
-- Container names are still `zz_acrxs_*`; a configurable prefix is a candidate change.
 - Known limitation: the builder lays respawn walls by reusing the host's ~830 wall pieces. That covers only part
   of a long stage's contour (12 of 33 km on the full SS8).
 
