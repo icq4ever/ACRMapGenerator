@@ -362,6 +362,72 @@ unassigned, and the bake takes about 1.5 min.
   - `bounds_vs_render` (with `--render`): median overlap (IoU) of each template's collision bounds with its render
     bounds, under the chosen primitive conventions and the alternatives.
 
+## IRs from other producers (no DR2 data)
+
+A Stage IR v2 does not have to come from `dr2-extract`. A spec with `IrDir` (docs/ir-stages.md) builds any folder that
+holds a valid `stage.json` plus the files it names. This section is the contract for such producers (e.g.
+ACRMapGenerator): which keys the build reads, which it ignores, and what it expects in them.
+
+### Required
+
+| key | used for |
+|---|---|
+| `schema`, `version` | must be `"acrxs/stage-ir"`, `>= 2` (`scripts/gen-ir-spec.ps1` refuses anything else) |
+| `name` | track and stage name in the menu, as written (any Unicode) |
+| `length_m` | stage length in the menu (km) |
+| `coordinates` | the convention in "Coordinate convention"; `y` is used as **absolute elevation** for the menu's min / max / start elevation |
+| `centreline`, `gates`, `timing` | as above: placement, splines, start / splits / finish, respawn, menu maps and height profile |
+| `collision` + its `.glb` | physics ground. Mesh material names are the surface codes listed in `surfaces[]` |
+| `surfaces[]` | `code` -> `acr_physical_material` (an ACR `PM_*` name); `dr2` may be `null` |
+
+### Read when present
+
+| key | used for | when missing |
+|---|---|---|
+| `location.name` | menu location: the text before the first comma ("Corsica, FR" -> "Corsica"); also the location row (PascalCase) | the stage `name` |
+| `location.country` | flag and "Nation": an ISO 3166 alpha-2 code (`FR`) or an English country name, matched to a vanilla `DT_Countries` row | the template location's flag |
+| `surface_segments[]` | `{from, to, surface}`: the longest `surface` picks the menu surface (asphalt / tarmac / concrete / paved -> Tarmac, snow / ice -> Snow, else Gravel) and the vanilla location copied for it (Alsace / Livigno / Wales) | Gravel |
+| `sources.attribution[]` | the location's info-box text ("<location.name>. Built from <attribution>.") | `location.name` |
+| the file `render/vista.glb` (listed in `render[]` as `kind: "vista"`) | distant terrain ring (`--visuals-vista 1`) | no vista |
+| `pacenotes.tokens[]` | co-driver calls, see below | the host pace note table is emptied (no calls) |
+| `objects` | object collision (`config/object-collision.toml`) | none |
+
+Ignored by the build (kept for the producer's own use): `structures`, `surface_segments` beyond the menu surface,
+`validation`, `sources` beyond `attribution`, `location.id` / `archive` / `route_index`, `triggers`.
+
+### pacenotes for non-DR2 IRs
+
+`stage-build --pacenote-map` reads only `pacenotes.tokens`, one object per call, in driving order:
+
+| field | type | meaning |
+|---|---|---|
+| `call`, `subcall` | int | ordering key: `call` increases along the route, `subcall` orders parts of one call (start at 1) |
+| `gate_distance` | number | where the call is read, on the **`gates[].distance` scale** (not from the start line) |
+| `kind` | string | `corner`, `distance` or `finish` (anything else is dropped as unmapped) |
+| `direction` | string | corners: `left` / `right` |
+| `severity` | string | corners: `"6"` (fastest) .. `"1"`, `"square"`, `"hairpin"` |
+| `distance_call_m` | number | distances: the spoken distance (20 / 30 become "And"; 40 and more become DistNN rows, see `config/pacenote-map.toml`) |
+| `modifiers` | string[] | optional; only `"dont_cut"` is mapped |
+| `distance_m` | number | optional; metres from the start line, used in the report only |
+
+The vocabulary is `config/pacenote-map.toml`. The corner row's position and length come from the built road's
+geometry, so `gate_distance` only has to be the reading point a co-driver would use (typically 50-150 m before the
+corner). `stage-build` writes `pacenotes-<id>.md` with every call checked against the geometry.
+
+### Menu images (planned, not implemented yet)
+
+Optional files in the IR folder. The build uses each one that exists and keeps today's behaviour for the rest. Any size
+is accepted; each image is cover-cropped (centred, aspect kept) to its target. PNG, 8-bit RGB or RGBA.
+
+| file | menu use | target size | when missing |
+|---|---|---|---|
+| `menu/logo.png` | location logo plate (main menu, track select) | 485 x 218, transparent background | generated "RALLY <location>" plate |
+| `menu/tile.png` | location tile (portrait card on the main menu) | 406 x 737 | the vanilla template location's tile |
+| `menu/art.png` | stage backdrop 1325 x 922, variant banner 1720 x 448, lobby thumbnail 170 x 100, all cropped from this one image | at least 1920 x 1080, landscape, no text near the edges | the template stage's (Hafren South) photos |
+
+The track map, route map and height profile are always drawn from `centreline` / `gates`. Logo and tile belong to the
+location, so stages that share a location should ship the same files (the first spec of that location wins).
+
 ## Batch: `stage-ir --all` and report.md
 
 `stage-ir --all` builds every stage (no render meshes unless `--render`). It writes `work/ir/report.md` with:

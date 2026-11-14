@@ -30,6 +30,10 @@ param(
     [string]$Game = $(if ($env:ACR_GAME_DIR) { $env:ACR_GAME_DIR } else { 'C:\Program Files (x86)\Steam\steamapps\common\Assetto Corsa Rally' }),
     [string]$Retoc,
     [string]$Prefix = $(if ($env:ACRXS_PREFIX) { $env:ACRXS_PREFIX } else { 'zz_acrxs' }),
+    # Stacking on other installed registries (scripts/install-ir-stages.ps1; default: vanilla tables, plain _P):
+    [string]$RegistryBase,       # legacy root whose Data/Database/Main tables the registry extends instead of vanilla's
+    [int]$RegistryPriority = 0,  # > 0: name the registry <prefix>_registry_<n>_P (pak order (n+1)*100, above lower-numbered patches)
+    [string]$VerifyBase,         # game dir (acr\Content\Paks) that -Verify compares against and mounts below the built containers
     [switch]$Verify
 )
 if ($Prefix -notmatch '^[a-z][a-z0-9_]*$') { throw "-Prefix must be lowercase letters, digits and _: $Prefix" }
@@ -287,9 +291,13 @@ $regSpecs = [string[]]@(if ($PassedOnly) {
     }
 } else { $specFiles })
 $reg = Join-Path $work 'mod-registry'
+$regName = if ($RegistryPriority -gt 0) { "${Prefix}_registry_${RegistryPriority}_P" } else { "${Prefix}_registry_P" }
 if (-not $SkipRegistry) {
     Remove-Item -Recurse -Force $reg -ErrorAction SilentlyContinue
-    Run $tool registry --legacy $legacy --out $reg --ir-root (Join-Path $root 'work\ir') @regSpecs
+    $regArgs = @('registry', '--legacy', $legacy)
+    # stacked base: other mods' tables, with imports they lost in conversion repaired from the vanilla tables
+    if ($RegistryBase) { $regArgs = @('registry', '--legacy', (Resolve-Path $RegistryBase).Path, '--repair-from', $legacy) }
+    Run $tool @regArgs --out $reg --ir-root (Join-Path $root 'work\ir') @regSpecs
     # new locations: tile (DR2 loading art) and rally-plate logo textures under /Game/AcrXs/Locations/<Row>/ in the registry container
     $logoDir = Join-Path $work 'location-logos'
     & pwsh -NoProfile -File (Join-Path $root 'scripts\menu-location-logos.ps1') -Specs ($regSpecs -join ';') -Out $logoDir | Out-Host
@@ -299,8 +307,9 @@ if (-not $SkipRegistry) {
     $needArt = @($regSpecs | ? { (Get-Content $_ -Raw | ConvertFrom-Json).Location.TileArt })
     if ($needArt -and -not (Test-Path $artDir)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
     Run $tool menu-locations --legacy $legacy --out $reg --art-dir $artDir --logo-dir $logoDir --preview (Join-Path $root 'work\acr\menu-preview\locations') @regSpecs
-    Remove-Item (Join-Path $dist "${Prefix}_registry_P.*") -ErrorAction SilentlyContinue
-    Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist "${Prefix}_registry_P.utoc")
+    # any earlier registry of this prefix, whatever its priority suffix
+    Get-ChildItem $dist -File -Filter "${Prefix}_registry*" | Remove-Item -ErrorAction SilentlyContinue
+    Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist "$regName.utoc")
 }
 
 if ($Verify -and -not $SkipRegistry) {
@@ -308,15 +317,17 @@ if ($Verify -and -not $SkipRegistry) {
     $full = Join-Path $check 'acr\Content\Paks'
     Remove-Item -Recurse -Force $check -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force $full | Out-Null
-    Get-ChildItem $paks -File | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
+    # what the built containers are compared with and mounted over: vanilla, or (stacking) the installed state's tables
+    $baseGame = if ($VerifyBase) { (Resolve-Path $VerifyBase).Path } else { $vanilla }
+    Get-ChildItem (Join-Path $baseGame 'acr\Content\Paks') -File | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
     Get-ChildItem $dist -File "${Prefix}_*" | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
     $specDir = Join-Path $check 'specs'
     New-Item -ItemType Directory -Force $specDir | Out-Null
     $regSpecs | % { Copy-Item $_ $specDir }
-    Run $tool verify --vanilla $vanilla --game $check --spec $specDir --ir-root (Join-Path $root 'work\ir') --out (Join-Path $check 'verify.txt') --prefix $Prefix
+    Run $tool verify --vanilla $baseGame --game $check --spec $specDir --ir-root (Join-Path $root 'work\ir') --out (Join-Path $check 'verify.txt') --prefix $Prefix
     $rtPaks = Join-Path $check 'roundtrip-paks'
     New-Item -ItemType Directory -Force $rtPaks | Out-Null
-    Copy-Item (Join-Path $paks 'global.*'), (Join-Path $dist "${Prefix}_registry_P.*") $rtPaks
+    Copy-Item (Join-Path $paks 'global.*'), (Join-Path $dist "$regName.*") $rtPaks
     $rt = Join-Path $check 'roundtrip'
     Run $Retoc to-legacy --version UE5_6 --no-shaders $rtPaks $rt
     $uexp = @(Get-ChildItem $reg -Recurse -File -Filter *.uexp)

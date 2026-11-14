@@ -150,6 +150,17 @@ internal static class Registry
         var schema = new Schema(o.Usmap);
         var tables = AllTables(specs);
         var t = tables.ToDictionary(x => x.table, x => new DbTable(TablePath(legacy, x.file), schema, x.rowStruct));
+        // --repair-from <vanilla legacy root>: base tables copied out of another mod can carry imports that the zen -> legacy
+        // conversion could not name (/Engine/UnknownPackage); put back the vanilla table's import there (e.g. ST_Track)
+        if (o.Named.GetValueOrDefault("repair-from") is { } repairFrom)
+            foreach (var (table, file, _) in tables)
+            {
+                var refPath = TablePath(repairFrom, file);
+                if (!File.Exists(refPath)) continue;
+                var repaired = t[table].Package.RepairUnknownImports(new AcrRef.LegacyPackage(refPath));
+                if (repaired.Count > 0)
+                    Console.WriteLine($"{table}: repaired unknown import(s) {string.Join(", ", repaired.Select(i => $"#{i} -> {t[table].Package.ImportName(i)}"))} from the vanilla table");
+            }
         var vanillaKeys = t.ToDictionary(kv => kv.Key, kv => kv.Value.Rows.Select(r => r.Key).ToHashSet());
 
         // Create locations before stages so Template owners need not sort before Row-only peers.

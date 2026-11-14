@@ -166,6 +166,35 @@ internal sealed class LegacyPackage
     public int ImportOuter(int i) => BinaryPrimitives.ReadInt32LittleEndian(_imports[i].AsSpan(16));
     public byte[] ImportEntry(int i) => _imports[i];
 
+    /// Imports that a zen -> legacy conversion could not name (retoc writes /Engine/UnknownPackage / UnknownExport when the
+    /// imported package was not mounted) are rewritten as the same-index import of `reference`, a clean copy of this package
+    /// (e.g. vanilla's). Only entries whose class package, class name or object name is one of those placeholders are touched,
+    /// and only when both import maps have the same length. Returns the repaired import indices.
+    public List<int> RepairUnknownImports(LegacyPackage reference)
+    {
+        var fixedIdx = new List<int>();
+        bool Unknown(int i) => new[] { ImportClassPackage(i), ImportClassName(i), ImportName(i) }
+            .Any(n => n is "/Engine/UnknownPackage" or "UnknownExport");
+        if (!Enumerable.Range(0, _imports.Count).Any(Unknown)) return fixedIdx;
+        if (reference._imports.Count != _imports.Count)
+            throw new InvalidDataException($"{_imports.Count} imports vs {reference._imports.Count} in the reference: cannot repair the unknown imports");
+        for (int i = 0; i < _imports.Count; i++)
+        {
+            if (!Unknown(i)) continue;
+            var src = reference._imports[i];
+            if (src.Length != _imports[i].Length) throw new InvalidDataException($"import {i}: entry size differs from the reference");
+            var e = (byte[])src.Clone();
+            foreach (int at in new[] { 0, 8, 20 })   // FName ClassPackage, ClassName, ObjectName; OuterIndex (16) is kept from the reference
+            {
+                int idx = BinaryPrimitives.ReadInt32LittleEndian(src.AsSpan(at));
+                BinaryPrimitives.WriteInt32LittleEndian(e.AsSpan(at), AddName(reference._names[idx]));
+            }
+            _imports[i] = e;
+            fixedIdx.Add(i);
+        }
+        return fixedIdx;
+    }
+
     public int FindName(string s) => _names.IndexOf(s);
     public int FindExport(string name, string? cls = null, Func<int, bool>? pred = null)
     {
