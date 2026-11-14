@@ -58,8 +58,10 @@
   with calls that are mostly right. Next: tune timing and severities from a drive with visual notes on.
 - **Menu images**: location logo and tile and stage art, as specified in [menu-images.md](menu-images.md); stage art
   rendered from the terrain when none is supplied.
-- **Build without wrappers:** IR mode in the acr-extrastages fork (`feature/ir-stages`: non-DR2 build via spec
-  `IrDir`, menu registration from `stage.json`, ElevationAtStart fix). Next: test end to end, then upstream PRs.
+- **Build without wrappers** ✅ the builder (ACR Extra Stages fork with IR mode) is in `builder/` as a git subtree:
+  non-DR2 build via spec `IrDir`, menu registration from `stage.json`, stacked install next to other stage mods.
+  Built, installed and driven in game (2026-11-15). Next: fix the service park view (#1) and replay cameras (#2) in
+  `builder/`, and send generic fixes upstream.
 - **More countries** (terrain providers, see [data-sources.md](data-sources.md)), in this order: Spain / Catalunya
   (CNIG PNOA, ICGC; CC BY 4.0), Wales (DataMapWales / Environment Agency, up to 25 cm; OGL), Finland (NLS; CC BY 4.0),
   Estonia (Maa-amet). Plus a **global fallback** (Copernicus GLO-30) for places without open LiDAR, clearly marked as

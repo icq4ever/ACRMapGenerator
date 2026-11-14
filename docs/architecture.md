@@ -6,13 +6,15 @@ For the methods themselves (centreline, width, mesh, ...) see [how-it-works.md](
 ## Scope
 
 ```
-open data (LiDAR, OSM, ...) ──► ACR Map Generator ──► Stage IR ──► acr-extrastages ──► ACR mod
+open data (LiDAR, OSM, ...) ──► generator (src/) ──► Stage IR ──► builder (builder/) ──► ACR stage mod
 ```
 
-- **In scope:** fetching open geodata, extracting the road and its profile, building physics ground and
-  scenery, writing Stage IR (and the stage package for previews).
-- **Out of scope:** anything that touches game files (cooking, baked physics, menu tables, paks). acr-extrastages
-  does that from the IR. Keeping that line means this tool only ever handles open data.
+- **Generator (`src/`, Python):** fetching open geodata, extracting the road and its profile, building physics
+  ground and scenery, writing Stage IR (and the stage package for previews). It never touches game files.
+- **Builder (`builder/`, .NET / PowerShell):** everything that touches game files (cooking, baked physics, menu
+  tables, paks, install). It is ACR Extra Stages (cherrymcgerry) from our fork, included as a git subtree, and
+  reads only the Stage IR from the generator. Keeping the IR as the only interface means the generator only ever
+  handles open data.
 
 ## Code layout
 
@@ -43,6 +45,7 @@ src/acr_map_generator/
 scripts/blender_view_package.py   Blender viewer (runs inside Blender)
 stages/            stage definitions (+ _template.toml, CC BY-SA 4.0)
 tests/             offline tests on synthetic data
+builder/           IR -> ACR stage mod builder (ACR Extra Stages fork, git subtree; own docs in builder/docs/)
 ```
 
 ## Data kinds and providers
@@ -130,3 +133,8 @@ A new processing step goes into `pipeline.STEPS` with its params, deps and code 
   Stage frame: X east, Y south, Z up (UE's left-handed frame). Stage IR / glTF: x east, y up, z south.
 - **Python** via `uv` (3.12). On Windows the system `python` is the Store stub, so don't use it.
 - **Git.** No AI attribution trailers (`Co-Authored-By`) in commits or PR descriptions.
+- **`builder/` is a subtree.** Never mix `builder/` changes and other changes in one commit, so builder fixes can be
+  split out (`git subtree split --prefix=builder`) and sent upstream as PRs from the fork
+  [icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages). Merge PRs that touch `builder/` with a
+  merge commit (no squash or rebase). Upstream changes:
+  `git subtree pull --prefix=builder https://github.com/cherrymcgerry/acr-extrastages main`.
