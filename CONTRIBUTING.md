@@ -36,6 +36,18 @@ By submitting a contribution you agree that it is licensed under the licence of 
   its parameters, dependencies and code files, so fingerprints stay correct.
 - **Stage names:** `display_name` uses place names only, never event trademarks.
 
+## AI-assisted contributions
+
+This project itself is developed with AI coding assistants, and contributions made with them are welcome, on the
+same terms as any other:
+
+- **You are responsible for what you submit.** Read and understand every change, run the tests, and check the result
+  (e.g. build the stage and look at it). Unreviewed generated code or stage data will be declined.
+- **Say so in the pull request** when a substantial part was generated (a new module, a large refactor, a new stage
+  file). A single line is enough. No commit trailers are needed.
+- **Licensing is on you.** Don't submit code or data an assistant reproduced from sources whose licence doesn't allow
+  it. Everything must fit the repository's licences (MIT OR Apache-2.0 for code, CC BY-SA 4.0 for stage files).
+
 ## Development
 
 ```

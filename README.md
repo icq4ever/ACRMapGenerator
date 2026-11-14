@@ -18,6 +18,8 @@ IR into an ACR mod. This tool uses only open data and never reads or writes game
 > Early stage. One stage (Muracciole – Noceta, Corsica, 16.5 km) has been built and driven in game.
 > Visual detail (ground textures, trees, buildings) is not done yet.
 
+This project is developed with the help of AI coding assistants. Every change is reviewed by the maintainer.
+
 ## Requirements
 
 - [uv](https://docs.astral.sh/uv/) (installs Python 3.12 and the dependencies on first run)
