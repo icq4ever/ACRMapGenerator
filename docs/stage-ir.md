@@ -57,28 +57,29 @@ A section gets 80 m of run-up and 150 m of run-out on the real road.
 ## Building with acr-extrastages
 
 ```
-ACR Map Generator                 acr-extrastages (fork, branch feature/ir-stages)
-build <stage> ──► stage_ir/<id>/ ──► scripts/gen-ir-spec.ps1 -Ir <IR folder> -Id <AcrId>   → stage spec (.json)
-                                 ──► mods/additive/build.ps1 -Stages <spec> [-Verify]      → zz_acrmg_* paks
-                                 ──► install into the game's ~mods
+generator (src/)                  builder (builder/, run from that folder)
+build <stage> ──► stage_ir/<id>/ ──► scripts/gen-ir-spec.ps1 -Ir <IR folder> -Id <AcrId>      → stage spec (.json)
+                                 ──► mods/additive/build.ps1 -Stages <specs> -Prefix zz_acrmg  → zz_acrmg_* paks
+                                 ──► scripts/install-ir-stages.ps1 -Prefix zz_acrmg            → game's ~mods
 ```
 
-The building happens on the player's PC, because it needs the player's own copy of the game. Upstream
-acr-extrastages builds DiRT Rally 2.0 stages only. Our fork,
-[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), adds an IR mode for IRs from other producers
-(branch `feature/ir-stages`, meant for upstream PRs). A stage spec with `IrDir` is built without the DR2-only options,
-and `scripts/gen-ir-spec.ps1` writes that spec from the IR's `stage.json`. `-Id` is the ACR row/package name: letters
+The building happens on the player's PC, because it needs the player's own copy of the game. The builder in
+`builder/` is ACR Extra Stages, which upstream builds DiRT Rally 2.0 stages only. Our fork
+([icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), included here as a git subtree) adds an IR
+mode for IRs from other producers. A stage spec with `IrDir` is built without the DR2-only options, and
+`scripts/gen-ir-spec.ps1` writes that spec from the IR's `stage.json`. `-Id` is the ACR row/package name: letters
 and digits, starting with a letter (e.g. `AmgMurNoc01`). Stages from this producer go under `/Game/AcrMg` in
-`zz_acrmg_*` containers.
+`zz_acrmg_*` containers, and install stacks their menu tables on top of other installed stage mods. Setup, options
+and install: [builder/docs/ir-stages.md](../builder/docs/ir-stages.md), [builder/docs/other-mods.md](../builder/docs/other-mods.md).
 
-Status (2026-11-15): the Muracciole–Noceta 10.6 km section builds as `AmgMurNoc01` with all offline checks passing
-(67/67). The menu shows location "Corsica" (France flag, Tarmac), the IR name, 10.58 km, elevations 561–910 m and
-generated route map / height profile. The fork's IR-mode build is not yet tested in game. (Earlier builds through an
-external wrapper drove start to finish in game.)
+Status (2026-11-15): the Muracciole–Noceta 10.6 km section builds as `AmgMurNoc01` with all offline checks passing.
+The menu shows location "Corsica" (France flag, Tarmac), the IR name, 10.58 km, elevations 561–910 m and
+generated route map / height profile. It is installed and drove start to finish in game with pace notes.
 
 ### The producer contract
 
-The authoritative contract is the fork's `docs/stage-ir.md`, section **"IRs from other producers (no DR2 data)"**.
+The authoritative contract is [builder/docs/stage-ir.md](../builder/docs/stage-ir.md#irs-from-other-producers-no-dr2-data),
+section **"IRs from other producers (no DR2 data)"**.
 Summary for this producer:
 
 | IR key | Used for | We write |
