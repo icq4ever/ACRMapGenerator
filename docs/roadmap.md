@@ -52,8 +52,10 @@
   2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
   3. Buildings in villages from BD TOPO.
   4. 0.5 m mesh vertices near the road (ditches, rock steps).
-- **Pacenotes** generated here from the centreline and written into the IR (`pacenotes.tokens`). Priority: the
-  fork's IR mode takes calls only from the IR, so without them a stage has no co-driver.
+- **Pacenotes** ✅ generated from the smoothed LiDAR centreline into `pacenotes.tokens`. Next: tune against the
+  builder's call-vs-geometry report and an in-game drive.
+- **Menu images**: location logo and tile and stage art, as specified in [menu-images.md](menu-images.md); stage art
+  rendered from the terrain when none is supplied.
 - **Build without wrappers:** IR mode in the acr-extrastages fork (`feature/ir-stages`: non-DR2 build via spec
   `IrDir`, menu registration from `stage.json`, ElevationAtStart fix). Next: test end to end, then upstream PRs.
 - **More countries** (terrain providers, see [data-sources.md](data-sources.md)), in this order: Spain / Catalunya

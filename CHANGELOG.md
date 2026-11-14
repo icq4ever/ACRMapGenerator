@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Pace notes in the Stage IR (`pacenotes.tokens`), generated from the smoothed LiDAR centreline.
+- Docs: menu image format and layout (`docs/menu-images.md`), the acr-extrastages producer contract.
+
 ## [0.1.0] - Unreleased
 
 First public version. Builds drivable stages for *Assetto Corsa Rally* from open geodata and writes them as

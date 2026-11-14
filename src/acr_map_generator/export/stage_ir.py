@@ -28,6 +28,8 @@ from ..core import manifest
 from ..core.raster import load_terrain
 from ..core.stage import Stage
 from .gltf import write_glb
+from .pacenotes import make_pacenotes
+from .pacenotes import summary as pacenote_summary
 from .terrain_mesh import ZONES_LIGHT, Frame, build_tiles
 from .vista import build_vista
 
@@ -156,6 +158,10 @@ def export_stage_ir(
         raise AssertionError("gate right side does not match cross(forward, +Y)")
 
     gd = d - s0  # gate distances from the first gate
+
+    # Pace notes from the full-resolution centreline (plan = east, north)
+    pacenotes = make_pacenotes(np.column_stack([st[:, 0], -st[:, 1]]), s, start, finish, s0)
+    print(f"  pace notes: {pacenote_summary(pacenotes)}")
 
     # Grade audit on the exported road (IR y = up): flag anything steeper than MAX_GRADE over 10 m
     zz = crossing[:, 1]
@@ -321,7 +327,7 @@ def export_stage_ir(
         "centreline": crossing.round(3).tolist(),
         "gates": gates,
         "timing": timing,
-        "pacenotes": None,
+        "pacenotes": pacenotes,
         "triggers": [],
         "respawn": {
             "method": "gates",

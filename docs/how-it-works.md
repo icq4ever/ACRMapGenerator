@@ -82,6 +82,15 @@ ACR's start procedure (countdown, start trigger) failed on a start placed in a 2
 Exports move the start forward to the first spot with 30 m of road on either side that is straight (≤ 0.75 m off
 the 60 m chord), level (< 5%) and wide (≥ 5 m), with at least 80 m of run-up behind it.
 
+## Pace notes
+
+Corners come from the centreline, smoothed with an 8 m Gaussian first: the LiDAR line's ±0.2 m jitter otherwise reads
+as extra corners. Runs with a radius under 140 m over a ±5 m window that turn at least 10° become corners. Severity
+comes from sqrt(turn°) / min radius, with cut points calibrated against stock ACR calls; hairpins and squares are
+detected separately. Corners less than 40 m apart are linked into one call. A straight of 40 m or more adds a
+distance call, and calls are read 90 m before the corner. SS8 section: 49 calls, 97 corners (49 linked),
+47 distances. The builder places each call on the built road and reports any call that disagrees with the geometry.
+
 ## Road surfaces
 
 `[stage] surface` is the default and `[[route.surfaces]]` stretches override it (km along the centreline).

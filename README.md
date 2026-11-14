@@ -91,6 +91,7 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
 - [docs/stage_package.md](docs/stage_package.md): stage package format
 - [docs/data-sources.md](docs/data-sources.md): open LiDAR survey and data decisions
 - [docs/roadmap.md](docs/roadmap.md): status and next steps
+- [docs/menu-images.md](docs/menu-images.md): menu logo, tile and stage art (format, layout, rights)
 - [docs/licensing.md](docs/licensing.md): licences of this repo, the source data and built stages
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to add stages, data sources and code
 - [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)

@@ -94,13 +94,13 @@ Summary for this producer:
 | `surface_segments[]` | the longest `surface` picks the menu surface and the vanilla location copied for it | yes (our extension) |
 | `sources.attribution[]` | the location's info-box text ("Corsica. Built from …") | from the manifest |
 | `render/vista.glb` | distant terrain ring | when the `vista` step ran |
-| `pacenotes.tokens[]` | co-driver calls (format below); **without them the stage has no calls** | not yet |
+| `pacenotes.tokens[]` | co-driver calls (format below); **without them the stage has no calls** | yes (from the centreline) |
 | `objects` | object collision | not yet |
 
 Ignored by the build (kept for our own use): `structures`, `links`, `validation`, `triggers`, `sources` beyond
 `attribution`, `location.id` / `archive` / `route_index`.
 
-### Pace notes format (to implement)
+### Pace notes format
 
 `pacenotes.tokens[]`, one object per call, in driving order:
 
@@ -116,13 +116,12 @@ Ignored by the build (kept for our own use): `structures`, `links`, `validation`
 
 The corner's position and length in game come from the built road geometry, so only the reading point matters.
 
-### Menu images (planned on the builder side)
+### Menu images (planned)
 
 Optional files the builder will pick up when present (any size, cover-cropped): `menu/logo.png` (location plate,
 485 × 218, transparent), `menu/tile.png` (portrait location tile, 406 × 737), `menu/art.png` (landscape ≥ 1920 × 1080,
 no text near the edges; cropped to backdrop, banner and lobby thumbnail). Stages sharing a location should ship the
-same logo and tile. This producer could render `art.png` from a hillshade now, and from aerial imagery once that
-provider exists.
+same logo and tile. Where they come from in this repository: [menu-images.md](menu-images.md).
 
 ### Constraints
 

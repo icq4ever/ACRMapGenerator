@@ -91,6 +91,7 @@ pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verif
 - [docs/stage_package.md](docs/stage_package.md): 스테이지 패키지 형식
 - [docs/data-sources.md](docs/data-sources.md): 공개 LiDAR 조사와 데이터 관련 결정
 - [docs/roadmap.md](docs/roadmap.md): 진행 상황과 다음 계획
+- [docs/menu-images.md](docs/menu-images.md): 메뉴 로고, 타일, 스테이지 그림 (규격, 위치, 권리)
 - [docs/licensing.md](docs/licensing.md): 이 저장소, 원본 데이터, 만들어진 스테이지의 라이선스
 - [CONTRIBUTING.md](CONTRIBUTING.md): 스테이지, 데이터 출처, 코드 기여 방법
 - [CHANGELOG.md](CHANGELOG.md), [SECURITY.md](SECURITY.md), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
