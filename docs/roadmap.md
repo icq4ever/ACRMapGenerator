@@ -53,8 +53,9 @@
   2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
   3. Buildings in villages from BD TOPO.
   4. 0.5 m mesh vertices near the road (ditches, rock steps).
-- **Pacenotes** ✅ generated from the smoothed LiDAR centreline into `pacenotes.tokens`. Next: tune against the
-  builder's call-vs-geometry report and an in-game drive.
+- **Pacenotes** ✅ generated from the smoothed LiDAR centreline into `pacenotes.tokens`, with exact corner spans.
+  The builder report has 0 mismatches. 2026-11-15: the SS8 section (fork IR mode, no wrapper) drove start to finish
+  with calls that are mostly right. Next: tune timing and severities from a drive with visual notes on.
 - **Menu images**: location logo and tile and stage art, as specified in [menu-images.md](menu-images.md); stage art
   rendered from the terrain when none is supplied.
 - **Build without wrappers:** IR mode in the acr-extrastages fork (`feature/ir-stages`: non-DR2 build via spec
