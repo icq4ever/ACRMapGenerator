@@ -95,7 +95,7 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
 
 ## Support
 
-If you'd like to support the project, sponsorships are greatly appreciated and help development a lot.
+Your support helps keep this project alive. Sponsorships are greatly appreciated.
 
 - [GitHub Sponsors](https://github.com/sponsors/icq4ever)
 - Kakao Pay: <br/>
