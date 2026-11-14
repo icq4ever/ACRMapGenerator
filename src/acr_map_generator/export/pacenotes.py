@@ -143,6 +143,9 @@ def make_pacenotes(plan: np.ndarray, s: np.ndarray, start_m: float, finish_m: fl
                     "angle": int(round(abs(turn))),
                     "corner_start_m": round(float(t[i] - start_m), 1),
                     "corner_end_m": round(float(t[j] - start_m), 1),
+                    # the corner's span on the gate scale: the builder places the row here instead of searching
+                    "corner_start_gate": gate(t[i]),
+                    "corner_end_gate": gate(t[j]),
                     "min_radius_m": round(rmin, 1),
                 }
             )

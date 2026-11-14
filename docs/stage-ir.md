@@ -113,8 +113,11 @@ Ignored by the build (kept for our own use): `structures`, `links`, `validation`
 | `distance_call_m` | distances: the spoken distance (20 / 30 become "And", 40+ become DistNN) |
 | `modifiers` | optional, only `"dont_cut"` is mapped |
 | `distance_m` | optional, metres from the start line (report only) |
+| `corner_start_gate`, `corner_end_gate` | corners: the corner's span on the gate scale. The fork places the row there instead of searching the geometry; without them it walks the road from the read point |
+| `corner_start_m`, `corner_end_m`, `angle`, `min_radius_m` | corners: the same span from the start line, and the measured turn and radius (report only) |
 
-The corner's position and length in game come from the built road geometry, so only the reading point matters.
+Without spans, the builder finds each corner by walking the built road from the read point. A corner it doesn't see
+then shifts every later call by one bend (seen on SS8). With the spans, each corner row is placed exactly.
 
 ### Menu images (planned)
 
