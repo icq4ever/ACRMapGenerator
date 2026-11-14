@@ -409,10 +409,15 @@ Ignored by the build (kept for the producer's own use): `structures`, `surface_s
 | `distance_call_m` | number | distances: the spoken distance (20 / 30 become "And"; 40 and more become DistNN rows, see `config/pacenote-map.toml`) |
 | `modifiers` | string[] | optional; only `"dont_cut"` is mapped |
 | `distance_m` | number | optional; metres from the start line, used in the report only |
+| `corner_start_gate`, `corner_end_gate` | number | **fork extension**, corners, optional: the corner's own span on the `gates[].distance` scale |
 
-The vocabulary is `config/pacenote-map.toml`. The corner row's position and length come from the built road's
-geometry, so `gate_distance` only has to be the reading point a co-driver would use (typically 50-150 m before the
-corner). `stage-build` writes `pacenotes-<id>.md` with every call checked against the geometry.
+The vocabulary is `config/pacenote-map.toml`. Without a span, the corner row's position and length come from the built
+road's geometry: `stage-build` aligns the calls, in order, to the corners it finds after each reading point
+(`gate_distance`, typically 50-150 m before the corner). One corner it does not see (e.g. a gentle bend under its
+thresholds) shifts every later call of the walk onto the next bend, so long linked calls are fragile. With
+`corner_start_gate` / `corner_end_gate` the row is placed on that span as given and the search is skipped for that
+token; tokens without a span still use the search. `stage-build` writes `pacenotes-<id>.md` with every call checked
+against the geometry either way (report key `corners_from_ir_span` counts the spans used).
 
 ### Menu images (planned, not implemented yet)
 

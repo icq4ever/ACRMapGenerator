@@ -258,8 +258,11 @@ internal static class Pacenotes
 
     // ---------------- DR2 -> ACR generation ----------------
 
+    /// CornerStartGate / CornerEndGate (fork extension, IRs from other producers: docs/stage-ir.md): the corner's own span on the
+    /// gates[].distance scale. When a corner token has both, its row is placed on that span instead of being searched for.
     public sealed record Dr2Token(int Call, int Subcall, double GateDistance, string Kind, string? Direction, string? Severity,
-                                  double? DistanceCall, string[] Modifiers, double DistanceM = 0, int Angle = 0, int DelayMs = 0);
+                                  double? DistanceCall, string[] Modifiers, double DistanceM = 0, int Angle = 0, int DelayMs = 0,
+                                  double? CornerStartGate = null, double? CornerEndGate = null);
 
     public static List<Dr2Token> LoadTokens(string stageJson)
     {
@@ -269,7 +272,8 @@ internal static class Pacenotes
             t["kind"]!.GetValue<string>(), t["direction"]?.GetValue<string>(), t["severity"]?.GetValue<string>(),
             t["distance_call_m"]?.GetValue<double>(),
             t["modifiers"]?.AsArray().Select(m => m!.GetValue<string>()).ToArray() ?? [],
-            t["distance_m"]?.GetValue<double>() ?? 0, t["angle"]?.GetValue<int>() ?? 0, t["delay_ms"]?.GetValue<int>() ?? 0)).ToList();
+            t["distance_m"]?.GetValue<double>() ?? 0, (int)Math.Round(t["angle"]?.GetValue<double>() ?? 0), t["delay_ms"]?.GetValue<int>() ?? 0,
+            t["corner_start_gate"]?.GetValue<double>(), t["corner_end_gate"]?.GetValue<double>())).ToList();
     }
 
     /// Median min radius (m) per severity on the host stage (pacenote-survey on Hafren South): the yardstick for the
@@ -441,6 +445,7 @@ internal static class Pacenotes
         public double Read;           // DR2 read point on the spline
         public Placed? PrevInSeq;     // previous corner in DR2 order (null: first corner of the stage)
         public double? WishBefore;    // DR2 spoken distance (m, >= min_dr2_m) between PrevInSeq and this corner
+        public double? SpanStart, SpanEnd;   // the corner's span on the spline when the IR gives it (corner_start_gate / corner_end_gate)
     }
 
     /// v1.4: each corner call takes the first not yet used geometric corner of its direction starting within
@@ -549,6 +554,11 @@ internal static class Pacenotes
                     var p = new Placed { Tokens = { sev.Replace("{Dir}", dir) }, Conj = pendingConj, Call = t.Call, Subcall = t.Subcall,
                                          Angle = t.Angle, Read = read, Want = t.Direction == "right" ? 1 : -1,
                                          PrevInSeq = lastSeq, WishBefore = pendingGap };
+                    if (t.CornerStartGate is { } csg && t.CornerEndGate is { } ceg)
+                    {
+                        double a = toSpline(csg), b = toSpline(ceg);
+                        if (b > a) { p.SpanStart = a; p.SpanEnd = b; }
+                    }
                     pendingConj = null; pendingGap = null; lastSeq = p;
                     foreach (var mod in t.Modifiers)
                         if (Map("modifiers", mod) is { } mt) p.Tokens.Add(mt); else Unmapped($"modifier {mod}");
@@ -583,15 +593,23 @@ internal static class Pacenotes
             }
         }
 
+        // corners whose span the IR gives are placed on it as they are; only the others are searched for on the geometry
+        int fromSpan = 0;
+        foreach (var p in placed.Where(p => p.SpanStart is not null))
+        {
+            p.Start = p.SpanStart!.Value; p.End = p.SpanEnd!.Value; p.Localised = true; fromSpan++;
+        }
+        var walk = placed.Where(p => p.SpanStart is null).ToList();
+
         // corner localisation on the geometry
         var mode = assignment ?? (m["layout"].TryGetValue("assignment", out var am) && am is string ams ? ams : "aligned");
         var hits = mode switch
         {
-            "greedy" => AssignGreedy(placed, corners, back, ahead),
-            "aligned" => AssignAligned(placed, corners, curve, m),
+            "greedy" => AssignGreedy(walk, corners, back, ahead),
+            "aligned" => AssignAligned(walk, corners, curve, m),
             _ => throw new ArgumentException($"[layout] assignment must be greedy or aligned, not {mode}"),
         };
-        foreach (var grp in Enumerable.Range(0, placed.Count).Where(i => hits[i] >= 0).GroupBy(i => hits[i]))
+        foreach (var grp in Enumerable.Range(0, walk.Count).Where(i => hits[i] >= 0).GroupBy(i => hits[i]))
         {
             // subcalls sharing one merged geometric corner split it at its straightest points
             var c = corners[grp.Key]; var idx = grp.ToList();
@@ -604,8 +622,9 @@ internal static class Pacenotes
                 cuts.Add(best);
             }
             cuts.Add(c.End);
-            for (int k = 0; k < idx.Count; k++) { placed[idx[k]].Start = cuts[k]; placed[idx[k]].End = cuts[k + 1]; placed[idx[k]].Localised = true; }
+            for (int k = 0; k < idx.Count; k++) { walk[idx[k]].Start = cuts[k]; walk[idx[k]].End = cuts[k + 1]; walk[idx[k]].Localised = true; }
         }
+        report["corners_from_ir_span"] = fromSpan;
         for (int i = 0; i < placed.Count; i++)
         {
             var p = placed[i];
