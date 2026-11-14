@@ -28,7 +28,8 @@
   2. **rally-maps.com paste import**: paste the stage page text to fill name, event, date, length, elevation,
      surface and related stages. rally-maps.com blocks automated access, so it is read by hand only.
   3. Helpers: a junction finder (OSM nodes where the route changes road) and a finish placed at the reference length.
-  4. `release <id>`: a versioned zip per stage (Stage IR, stage file, attribution, licence, build instructions)
+  4. `release <id>`: a versioned zip per stage (Stage IR, stage file, attribution, licence, build instructions),
+     leaving out menu images whose origin is `local`
      as the unit for sharing and for the platform.
   5. A step-by-step guide, `docs/creating-a-stage.md`.
 - **More stages from the same roads:**
