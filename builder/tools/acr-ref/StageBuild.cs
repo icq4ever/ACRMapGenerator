@@ -740,7 +740,8 @@ internal static class StageBuild
         {
             var vopt = Visuals.Options.From(o.Named);
             var vcfg = vopt.LoadConfig(visualsCfg);
-            var dr2 = vopt.Dr2 ? new Dr2Materials(vcfg, ir.Dir, legacy, outRoot, packageRoot) : null;
+            // texture / MIC writer: DR2 textures, or (IR stages) the ground-bake tiles alone
+            var dr2 = vopt.Dr2 || vopt.GroundBake is not null ? new Dr2Materials(vcfg, ir.Dir, legacy, outRoot, packageRoot) : null;
             r["visuals"] = Visuals.Build(cell, ir, pl, vcfg, vopt, objectShapes, InPhysicsBounds, dr2);
         }
         r["actors"] = actors;

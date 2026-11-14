@@ -215,7 +215,11 @@ internal static class Visuals
         if (opt.GroundBake is { } manifest)
         {
             // section 1 = the first tile, further tiles after the gates; triangles over no tile keep the grass slice below
-            if (!opt.Dr2On("terrain") || opt.Ground != "render") throw new ArgumentException("--visuals-ground-bake needs --visuals-dr2 (terrain not reverted) and --visuals-ground render");
+            // IR stages (fork extension): the textured collision ground takes the tiles; triangles over no tile keep [textured] terrain
+            bool irBake = !opt.Dr2 && opt.Textured;
+            if (!irBake && (!opt.Dr2On("terrain") || opt.Ground != "render"))
+                throw new ArgumentException("--visuals-ground-bake needs --visuals-dr2 (terrain not reverted) and --visuals-ground render, " +
+                                            "or (IR stages) --visuals-textured 1 without --visuals-dr2");
             var tiles = GroundLod.LoadTiles(manifest);
             var (used, rest, brep) = GroundLod.Split(terrain, pl, tiles);
             var dir = Path.GetDirectoryName(manifest)!;
@@ -223,13 +227,20 @@ internal static class Visuals
                 bakeSections.Add(($"terrain:{tile.Name}", s, MatPath(dr2!.Mic("bake_" + tile.Name, dr2.TextureFromFile(Path.Combine(dir, tile.Dds), "ground_bake_" + tile.Name)))));
             terrain = bakeSections[0].s; terrainMat = bakeSections[0].mat;
             bakeSections.RemoveAt(0);
-            if (rest.Idx.Count > 0)
+            if (rest.Idx.Count > 0 && irBake) bakeSections.Add(("terrain:rest", rest, Mat("textured", "terrain")));
+            else if (rest.Idx.Count > 0)
             {
                 dr2Rep["terrain_uv"] = BoxUv(rest, (float)(cfg.Num("dr2_textures", "terrain_tile_m") * 100));
                 bakeSections.Add(("terrain:rest", rest, MatPath(dr2!.Mic("terrain", dr2.Texture(dr2.TerrainTexture)))));
             }
-            dr2Rep["terrain"] = $"ground bake {manifest}: {used.Count} tile sections" + (rest.Idx.Count > 0 ? $", {rest.Idx.Count / 3} triangles over no tile on {dr2!.TerrainTexture}" : "");
-            dr2Rep["ground_bake"] = brep;
+            string restOn = irBake ? "[textured] terrain" : dr2!.TerrainTexture;
+            dr2Rep["terrain"] = $"ground bake {manifest}: {used.Count} tile sections" + (rest.Idx.Count > 0 ? $", {rest.Idx.Count / 3} triangles over no tile on {restOn}" : "");
+            if (irBake)
+            {
+                brep["textures"] = dr2!.TextureCount; brep["mics"] = dr2.MicCount; brep["texture_bytes"] = dr2.TextureBytes;
+                r["ground_bake"] = brep;   // the DR2 report block (dr2Rep) is only written with --visuals-dr2
+            }
+            else dr2Rep["ground_bake"] = brep;
         }
         else if (opt.Dr2On("terrain"))
         {
