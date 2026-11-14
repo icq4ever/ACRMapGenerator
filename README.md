@@ -1,5 +1,7 @@
 # ACR Map Generator
 
+**English** | [한국어](README.ko.md)
+
 Builds rally stages for **Assetto Corsa Rally** from open geodata: airborne LiDAR terrain and
 OpenStreetMap roads.
 

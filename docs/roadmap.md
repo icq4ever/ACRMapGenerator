@@ -68,6 +68,7 @@
   [data-sources.md](data-sources.md#own-capture-future-eg-korean-roads)) come in as local data providers. This
   covers places without open LiDAR and gives road-surface detail far beyond the 0.5 m DTM. See
   [architecture.md](architecture.md#local-and-own-data-planned).
-- **Docs for newcomers:** a getting-started guide with screenshots and short clips, and a Korean translation.
+- **Docs for newcomers:** a getting-started guide with screenshots and short clips. Korean: README.ko.md is done;
+  translate user-facing docs (stage creation guide, licensing) as they settle.
 - Later: a local web UI on top of `pipeline.build/status`, then the platform (shared catalogue, web detail
   editing, downloads).
