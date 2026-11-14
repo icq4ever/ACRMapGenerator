@@ -49,7 +49,7 @@ ACR 모드로 빌드합니다. DR2가 아닌 IR을 빌드하려면 우리 포크
 
 ```
 pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<id> -Id <AcrId>
-pwsh -File modsdditiveuild.ps1 -Stages workcr\specs-ir\<AcrId>.json -Verify
+pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verify
 ```
 
 메뉴의 스테이지 이름, 지역, 국기, 노면, 길이, 경로·고도 그림은 IR의 `stage.json`에서 가져옵니다.

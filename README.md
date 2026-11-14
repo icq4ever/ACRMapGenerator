@@ -51,7 +51,7 @@ ACR mod on your PC with your own copy of the game. Non-DR2 IRs need the IR mode 
 
 ```
 pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<id> -Id <AcrId>
-pwsh -File modsdditiveuild.ps1 -Stages workcr\specs-ir\<AcrId>.json -Verify
+pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verify
 ```
 
 Menu name, location, country flag, surface, length and the route/elevation images come from the IR's `stage.json`.
