@@ -30,5 +30,9 @@
   (see [data-sources.md](data-sources.md)).
 - **Full SS8 in game:** the 16.34 km version (enlarged world ~21 km²) is built but not yet driven.
 - Compare our elevation profile with rally-maps.com.
+- **Long term: own LiDAR capture.** Roads scanned with a vehicle-mounted LiDAR + RTK GNSS rig (see
+  [data-sources.md](data-sources.md#own-capture-future-eg-korean-roads)) come in as local data providers. This
+  covers places without open LiDAR and gives road-surface detail far beyond the 0.5 m DTM. See
+  [architecture.md](architecture.md#local-and-own-data-planned).
 - Later: release bundle per stage (IR + credits, versioned zip), GPX/KML route input, a local web UI on top of
   `pipeline.build/status`.

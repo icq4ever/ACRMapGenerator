@@ -63,6 +63,19 @@ registered provider that covers the area is used. `manifest.record()` stores whi
 layer, with its licence and attribution. Downstream code finds layers through `manifest.layer_path()`,
 never through fixed file names.
 
+### Local and own data (planned)
+
+Not everything will come from a public service. Own LiDAR scans (e.g. a vehicle-mounted rig) and other local
+files fit the same model:
+- A **local provider** reads user-supplied files instead of downloading, e.g. `sources/terrain/local_scan.py`
+  that turns a LAZ point cloud into a DTM. Everything downstream (centreline, width, mesh, Stage IR) is unchanged.
+- Dense mobile scans may justify a **`pointcloud` kind** (classified points, road-surface detail) next to
+  `terrain`, used where present and falling back to the DTM elsewhere, like the 0.5 m corridor today.
+- Stage files would point at the files through provider options (e.g. a path under `[terrain]`). That is a
+  schema extension to add when the first local provider exists.
+- The licence of own data is the owner's choice. The provider states it in `SourceInfo` like any other source,
+  so attribution keeps working.
+
 ## Stage files
 
 `stages/<id>.toml`, schema `acr-map-generator/stage` version 1. The models in `core/stage.py` are the single
