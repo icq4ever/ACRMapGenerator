@@ -88,5 +88,3 @@ If you find ACR Map Generator useful, consider supporting its development:
 - Code and docs: MIT OR Apache-2.0, at your option ([LICENSE-MIT](LICENSE-MIT), [LICENSE-APACHE](LICENSE-APACHE)).
 - Stage definitions in `stages/`: [CC BY-SA 4.0](stages/LICENSE).
 - Stages built with this tool also carry their source data licences. See [docs/licensing.md](docs/licensing.md).
-
-Copyright © 2026 studio42 Yi donghoon.
