@@ -94,7 +94,7 @@ blender --python scripts/blender_view_package.py -- data/<stage>/package/<packag
 
 ## 후원
 
-후원하고 싶으신 분들은 후원 부탁드립니다. 개발에 큰 힘이 됩니다.
+후원도 가능합니다. 개발에 큰 힘이 됩니다.
 
 - [GitHub Sponsors](https://github.com/sponsors/icq4ever)
 - 카카오페이: <br/>
