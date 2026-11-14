@@ -1,0 +1,138 @@
+# Interim visuals (stage-build --visuals, build.ps1 -Version v1.1+): render-only geometry written into a
+# ProceduralMeshComponent of the forward gameplay cell. See docs/decisions.md D6 (v1.1, v1.2) and D7 (v1.3 objects).
+
+[road]
+# DR2 ground codes drawn with the road material; all other DR2 collision is drawn as terrain
+surfaces = ["GD0+", "CATG"]
+
+[markers]
+spacing_m = 15          # edge posts along both gate edges
+post_width_m = 0.3
+post_height_m = 1.2
+gate_height_m = 5       # start / finish gate posts and banner
+
+[materials]
+# "" = engine default material (lit world grid; shows the terrain shape). The MI_* are the game's own physical-surface
+# debug materials (unlit flat colours, parent M_PhysicalSurface).
+terrain = ""
+road = "/Game/Data/Gameplay/PhysicalMaterials/MI_SurfaceGravelFine"
+posts = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallMetalPole"
+gates = "/Game/Data/Gameplay/PhysicalMaterials/MI_SurfaceGrass"
+
+[objects]
+# only used when stage-build also gets --objects (v1.3): the solid DR2 objects (the colliders written to BakedData)
+enabled = 1
+max_mesh_triangles = 4000       # per instance; heavier render meshes (vehicles, scaffolding banners, the start gantry)
+                                # are drawn as their collider shapes instead
+prism_sides = 6                 # capsule colliders (tree trunks) drawn as n-sided prisms
+max_total_triangles = 3000000   # offline check budget for the whole visuals mesh
+tree_shape_classes = ["sSolidTreeLeafy", "sSolidPalmShortTree"]
+# v1.4: nothing non-solid is drawn (v1.3 drew ~8,800 bush/fern/flax/grass clumps as 9-17 m octahedra). The only
+# non-solid geometry left is the optional tree crowns (stage-build --visuals-vegetation crowns / build.ps1 -Vegetation).
+road_overlap_tolerance_m = 0.2  # a solid render mesh may reach max_penetration_m + this into the road corridor
+                                # (over road surface, from car_height_min_m up to overhang_height_m); deeper -> shapes
+overhang_height_m = 6
+max_object_extent_m = 80        # offline check: largest drawn object (plan); NZ buildings are ~27 m, Poland's pol_big_barn 51 m, Greece's gre_stone_wall8 67 m (extent vs DR2 bounds is checked below)
+max_extent_over_bounds = 1.15   # offline check: drawn plan extent / DR2 render-bounds plan extent (+ 1 m)
+crown_max_radius_m = 2.5        # crowns mode: octahedron radius <= min(this, 0.5 x smaller crown plan extent)
+crown_radius_factor = 0.5       #   x half the smaller plan extent of the DR2 crown bounds
+crown_bottom_fraction = 0.6     #   crown spans this fraction of the tree height .. the top
+crown_min_bottom_m = 3          #   crowns lower than this above the tree base are not drawn
+crown_road_margin_m = 1.5       #   plan clearance kept from the road edges; a crown is shrunk to fit or dropped
+crown_min_radius_m = 0.6
+# DR2 tree canopies are inverted cone colliders (wide end up, ~3 m radius, apex ~1.5 m above the ground); drawn whole
+# they are the large orange panels seen in v1.4. The colliders are kept as DR2 has them either way.
+canopies = "clip"               # clip: draw only the part below canopy_clip_height_m above the tree base | full | none
+canopy_clip_height_m = 2.5      #   car height band
+# v1.9 (stage-build --visuals-canopies apex): clip kept the low side of tilted cones at full radius (up to 3.9 m wide
+# orange panels); apex scales the whole cone toward its apex until it is under the cut and at most this wide in plan
+canopy_max_span_m = 1.5
+shape_min_fill = 0.8            # offline check: drawn shape bounds / collider bounds per axis (prisms and capsule tips
+                                #   are inscribed; short tilted capsules fill ~0.84)
+
+[object_materials]
+# flat colours (SurfaceColor of each MI): trunks orange, wood yellow, metal violet (posts stay magenta), concrete blue,
+# rock cyan, plastic bright green, other (cars) black, soft (tree crowns in crowns mode only) dark green
+trunks = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallHayBale"
+wood = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallWood"
+metal = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallCloth"
+concrete = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallConcrete"
+rock = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallRock"
+plastic = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallPlastic"
+other = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallBasic"
+soft = "/Game/Data/Gameplay/PhysicalMaterials/MI_WallBush"
+
+[vista]
+# only with stage-build --visuals-vista 1 (build.ps1 v1.6+): DR2's distant vista ring (render/vista.glb, the NONLOD_i_j
+# meshes, ~10 km), drawn once the Hafren scenery is hidden so the horizon is not empty
+material = ""                   # engine default, like the terrain
+exclude_cell_m = 100            # vista triangles over a grid cell touched by the drawn ground are dropped
+min_distance_m = 50             # offline check: nearest vista vertex to the DR2 centreline (plan; DR2's own ring
+                                #   comes to ~83 m on nz01r5)
+
+[ground]
+# only with stage-build --visuals-ground render (build.ps1 v1.10): the terrain section is DR2's render terrain
+# (render/terrain.glb) instead of its collision ground, which covers only a ribbon along the road (acr-ref
+# terrain-compare: 43% of the ground within 60 m of the nz01r5 centreline has no collision triangle)
+road_mask_cm = 50               # render triangles with vertices, edge midpoints and centre over collision road cells are dropped
+fill_cell_cm = 100              # collision ground triangles whose centre is over no render terrain are drawn as a fill
+road_lift_cm = 2                # road section raised against z-fighting where the coplanar render terrain meets it
+hole_check_m = 60               # offline check: plan samples every 2 m within this of the centreline over drawn ground
+# only with --visuals-ground-lod 1 (build.ps1 v1.11): quadric edge collapse of the render terrain; no original plane
+# moves more than the tolerance, piecewise linear in the distance from the route (constant beyond the last point).
+# Border vertices (mesh edge, the cut along the road section) never move.
+simplify_distance_m = [10, 30, 60, 150, 300, 600]
+simplify_tolerance_cm = [2, 5, 10, 25, 60, 150]
+
+[textured]
+# only with stage-build --visuals-textured 1 (build.ps1 v1.7+): Hafren's own lit materials on the ground sections
+# (the v1.3 tex-proof showed both render on the visuals mesh with the right look). Objects keep their flat colours.
+terrain = "/Game/Environments/WalesS4HafrenSouth/TerrainMaterialInstances/MI_Terrain9MatBlend1001"
+road = "/Game/Environments/WalesS4HafrenSouth/GravelMaterial/MI_WalesS4HafrenSouthGravelRoad1"
+vista = "/Game/Environments/WalesS4HafrenSouth/TerrainMaterialInstances/MI_Terrain9MatBlend1001"
+terrain_uv_m = 4                # terrain UV0 = world plan position / this (as in the tex-proof)
+vista_uv_m = 40                 # coarser on the distant ring
+# road UVs in the layout of Hafren's road meshes (acr-ref mesh-uv SM_WalesS4HafrenSouthTrack0104_Road_0: UV0 2.02 m
+# across x 3.59 m along per unit, UV1 0..1 edge to edge x 7.17 m, UV2/UV4 trajectory 5.5 m x 100 m)
+road_uv0_across_m = 2.0
+road_uv0_along_m = 3.6
+road_uv1_along_m = 7.2
+road_traj_across_m = 5.5
+road_traj_along_m = 100
+road_color = [0, 128, 0, 10]    # RGBA vertex colour; Hafren's road vertices are R ~0, G 128, B 0, A mostly < 20
+road_follow_max_m = 15          # road-surface triangles further from the DR2 centreline (side roads) get world-planar UVs
+road_stretch_min_fraction = 0.95  # offline check: road triangles whose UV0 scale is within 1.5x of nominal
+
+[dr2_textures]
+# only with stage-build --visuals-dr2 1 (build.ps1 v1.8, on top of [textured]): DR2's own textures (dr2-extract
+# stage-textures -> work/ir/<stage>/textures) as new Texture2D + MaterialInstanceConstant packages under package_root.
+# --visuals-dr2-revert terrain,road,vista,objects (build.ps1 -Dr2Revert) keeps those sections on their v1.7 material.
+package_root = "/Game/AcrXs/Dr2Tex/nz01r5"
+# templates (acr-ref tex-scan / mic-scan): NeverStream, every mip inline in the export, not virtual
+texture_template = "/Game/Materials/PhotoMode/Textures/T_Dirt"        # sRGB, PF_DXT1 4096x2048, 13 mips
+linear_template = "/Game/Effects/Vehicles/Skid/T_SkidDebug_N"          # linear (flat ORM, flat normal)
+mic_template = "/Game/Environments/MonteCarloS2Sisteron/TileableMaterials/MI_SisteronConcrete01"   # parent M_Simple
+mic_base_texture = "T_ConcreteWalkway_C"      # the template's Simple_BaseColor_Texture
+mic_orm_texture = "T_ConcreteWalkway_L"       #   Simple_OcclRoughMet_Texture -> flat orm
+mic_normal_texture = "T_ConcreteWalkway_N"    #   Simple_Normal_Texture -> flat (BC5 128, 128)
+orm = [255, 217, 0]             # occlusion 1, roughness 0.85, metal 0 (ACR _L textures: R occlusion, G roughness, B metal)
+max_size = 2048                 # mips larger than this are dropped
+# DR2's terrain colour maps (nz_01_a_0x_d, section_b) are grey-centred tints over a 17-slice detail array blended per
+# vertex; M_Simple takes one texture, so the ground uses array slices as tiling textures
+terrain = "nz_ral_set_1_01_d1049518591_slice4"   # grass
+terrain_tile_m = 8                                # DR2's detail UV1 on the terrain is ~8 m per unit
+road = "nz_ral_set_1_01_d1049518591_slice2"      # road strip: gravel with grass verges, edge to edge across U
+# vista: large colour map (tint) x 2 over the three layers' mean colours mixed by the blend map, baked
+vista_colour_map = "nz_ral_master_vista_cm"
+vista_blend_map = "nz_ral_master_vista_mk"
+vista_layers = ["nz_ral_vista_grass_d", "nz_ral_vista_road_d", "nz_ral_vista_forest_d"]
+vista_size = 2048
+# objects: render-mesh instances by DR2 material (TDiffuse*); these shaders are alpha-tested or blended (no masked
+# parent: M_Simple is opaque), their triangles keep the class colour
+object_skip_shaders = ["foliage", "decal", "blend", "glass", "water", "shadow"]
+
+[checks]
+# Offline checks tuned on New Zealand that measure how closely the drawn ground / decoration follows DR2's collision mesh. On rocky
+# stages (cliffs and rocks have collision but are drawn as objects) and where DR2's terrain has gaps they fail without a real
+# defect; a failing check matching one of these regexes prints WARN (and is listed in the batch report) instead of failing the build.
+advisory = ["^visuals road corridor: posts", "^visuals: vista section last", "^visuals: terrain box UVs", "^visuals: \d+ triangles in total", "^visuals road corridor: objects:trunks", "^visuals ground: road vertices", "^visuals ground: drawn ground vs collision ground", "^visuals ground: \d+ plan samples", "^ground raycast at \d+ gate crossings", "^added simple entries: \d+ with their centre over the road surface"]
