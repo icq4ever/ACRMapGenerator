@@ -1,0 +1,65 @@
+# Stage definition template (schema acr-map-generator/stage, version 1).
+# Create a stage with `acr-map-generator new <id>`, fill in the TODOs, then run
+# `acr-map-generator validate <id>` and `acr-map-generator build <id>`.
+# The file name is the stage id: lowercase letters, digits, underscores.
+# Validation fails until the TODO values are replaced.
+
+schema = "acr-map-generator/stage"
+version = 1
+
+[stage]
+title = "TODO event year SSn – Start → Finish"   # internal name, may mention the event
+display_name = "TODO Start – Finish"             # menu/product name: places only, no event trademarks
+country = "TODO"                                 # ISO 3166-1 alpha-2, e.g. "FR"
+region = ""                                      # e.g. "Corsica"
+surface = "asphalt"                              # default road surface: "asphalt", "gravel" (hard) or "gravel_loose"
+
+[route]
+roads = []            # road refs the route follows, in order, e.g. ["D 343", "D 243", "D 43"] (OSM `ref`)
+# length_km = 0.0     # reference length (e.g. from rally-maps.com); the route step reports the difference
+
+# Waypoints in driving order: start, any junction where the route changes road, finish.
+# Junctions are best taken from OSM nodes; start/finish can be approximate (they snap to the road).
+[[route.waypoints]]
+name = "start"
+# lat = 0.0
+# lon = 0.0
+
+[[route.waypoints]]
+name = "finish"
+# lat = 0.0
+# lon = 0.0
+
+# Mixed stages: stretches whose surface differs from stage.surface, in km along the stage (0 = start
+# waypoint). The route step prints the OSM surface tags along the route as a suggestion; decide from real
+# stage information (OSM tags are incomplete and are never exported).
+# [[route.surfaces]]
+# from_km = 4.2
+# to_km = 7.9
+# surface = "gravel"
+# note = "forest section"
+
+[terrain]
+crs = "EPSG:2154"     # working CRS in metres (EPSG:2154 Lambert-93 for France/Corsica)
+resolution = 1.0      # base DTM cell size (m); a 0.5 m corridor is fetched around the road anyway
+margin = 1000         # m added around the waypoints for the fetch area
+
+# Free-form notes about the real stage. Nothing here is used for geometry.
+[reference.rally_maps]
+# url = "https://www.rally-maps.com/..."
+# event = ""
+# stage = ""
+# length_km = 0.0
+
+[export.package]
+id = "TODO"           # [A-Za-z0-9]+, used as the package folder name
+
+[export.stage_ir]
+id = "{{stage_id}}"   # Stage IR id (acr-extrastages builder input)
+
+[[export.stage_ir.variants]]
+name = "full"         # the whole stage
+
+# [[export.stage_ir.variants]]
+# name = "host"       # longest section that fits the host level without enlarging it
+# fit_host = true

@@ -1,0 +1,52 @@
+[project]
+name = "acr-map-generator"
+version = "0.1.0"
+description = "Build Assetto Corsa Rally stages from open LiDAR and OpenStreetMap data (Stage IR for acr-extrastages)"
+readme = "README.md"
+authors = [
+    { name = "Yi donghoon", email = "icq4ever@gmail.com" }
+]
+requires-python = ">=3.12"
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Games/Entertainment :: Simulation",
+]
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pydantic>=2.14.3",
+    "pyproj>=3.8.0",
+    "rasterio>=1.5.2",
+    "requests>=2.34.2",
+    "scipy>=1.18.1",
+]
+
+[project.urls]
+Repository = "https://github.com/icq4ever/ACRMapGenerator"
+
+[project.scripts]
+acr-map-generator = "acr_map_generator:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.5",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B905"]  # long lines: formatter; zip(a, a[1:]) pairs are intentionally unequal
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

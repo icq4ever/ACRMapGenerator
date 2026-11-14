@@ -1,0 +1,112 @@
+schema = "acr-map-generator/stage"
+version = 1
+
+# Tour de Corse – Rallye de France 1998, SS8 Muracciole → Noceta (via Vezzani).
+# Route traced from rally-maps.com (reference only; geometry comes from OSM + IGN LiDAR HD).
+[stage]
+title = "TdC 1998 SS8 – Muracciole → Noceta"
+display_name = "Muracciole – Noceta"
+country = "FR"
+region = "Corsica"
+surface = "asphalt"
+
+[route]
+roads = ["D 343", "D 243", "D 43"]
+length_km = 16.53     # rally-maps.com route tool
+
+# Start: D343 entering Muracciole from the SW (OSM way boundary, matches the rally-maps flag).
+# Finish: the point on D43 at the reference length (16.53 km), 470 m before the Noceta entrance.
+# Junctions are exact OSM nodes.
+[[route.waypoints]]
+name = "start (Muracciole SW entrance on D343)"
+lat = 42.16898
+lon = 9.18296
+
+[[route.waypoints]]
+name = "D343 -> D243 junction (osm node 990222309)"
+lat = 42.1788449
+lon = 9.2436949
+
+[[route.waypoints]]
+name = "roundabout, D243 -> D43"
+lat = 42.1842
+lon = 9.2479
+
+[[route.waypoints]]
+name = "finish (D43, 16.53 km from start)"
+lat = 42.193974
+lon = 9.208485
+
+[terrain]
+crs = "EPSG:2154"
+resolution = 1.0
+margin = 1000
+
+# What rally-maps.com says about this stage (reference only: no geometry is taken from it).
+# rally-maps.com blocks automated fetches; these notes come from web search results and from map
+# screenshots taken by hand (2026-11-14). The name "Muracciole–Vezzani" is jcrr's Assetto Corsa mod, not
+# a rally-maps stage.
+[reference.rally_maps]
+url = "https://www.rally-maps.com/Tour-de-Corse-Rallye-de-France-1998"
+event = "Tour de Corse – Rallye de France 1998"
+stage = "SS8 Muracciole - Noceta"
+length_km = 16.53            # route tool: 2.70 km from start + 13.83 km to finish
+length_km_listed = 16.48     # stage list as shown in search results (1998, also 1999 SS8)
+direction = "Muracciole (SW) -> Vezzani -> Rospigliani -> Noceta (N)"
+route = "D343 east past Vezzani, D243 north, roundabout (Sarra Mezzana), D43 west through Rospigliani"
+start = "D343 at the SW entrance of Muracciole"
+finish = "D43 south-east of Noceta, before the village"
+surface = "tarmac"
+# Our measurements (centreline, 2026-11-15): 16.55 km; start 618 m, highest 910 m at 8.3 km, finish 544 m;
+# width median 5.8 m. The ACR export starts at 0.21 km (plain start rule), so 16.34 km.
+
+# Distance markers read off the route tool, with where they lie and our centreline distance there
+[[reference.rally_maps.markers]]
+km = 2.70
+where = "D343, on the climb north of Muracciole"
+
+[[reference.rally_maps.markers]]
+km = 9.87
+where = "D343 west of Vezzani, before the D243 junction (ours: junction at 10.70 km)"
+
+[[reference.rally_maps.markers]]
+km = 11.88
+where = "D43 just west of the D243 roundabout (ours: roundabout at 11.72 km)"
+
+# Other editions of the same roads on rally-maps.com (search results)
+[[reference.rally_maps.editions]]
+year = 1999
+stage = "SS8 Muracciole - Noceta"
+length_km = 16.48
+
+[[reference.rally_maps.editions]]
+year = 1991
+stage = "SS11 Muracciole - Noceta"
+length_km = 16.38
+
+[[reference.rally_maps.editions]]
+year = 1987
+stage = "SS6 Muracciole - Pont de Noceta"
+length_km = 21.0
+note = "route derived from start/finish locations (rally-maps note)"
+
+[[reference.rally_maps.editions]]
+year = 1979
+stage = "SS9 Muracciole - Antisanti 1"
+length_km = 20.5
+note = "start/finish locations marked inaccurate (rally-maps note)"
+
+[export.package]
+id = "MuraccioleNoceta"
+road_width = 6.0       # m; fallback only: the centreline step measures the width per vertex
+
+[export.stage_ir]
+id = "corsica_muracciole_noceta"
+
+[[export.stage_ir.variants]]
+name = "full"
+
+[[export.stage_ir.variants]]
+name = "host"          # id kept from the first export (existing builds refer to this path)
+id = "corsica_muracciole_noceta_5150_15950"
+fit_host = true
