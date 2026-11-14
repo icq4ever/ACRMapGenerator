@@ -119,6 +119,12 @@ def _package_outputs(st: Stage) -> list[Path | None]:
     return [st.area.data_dir / "package" / pkg.id / "stage.json"] if pkg else []
 
 
+def _menu_fingerprint(st: Stage) -> dict:
+    from .export.menu_images import fingerprint
+
+    return fingerprint(st)
+
+
 def _stage_ir(st: Stage):
     from .export.stage_ir import export_all
 
@@ -178,6 +184,7 @@ STEPS: list[Step] = [
             "surfaces": [x.model_dump() for x in st.config.route.surfaces],
             "links": [x.model_dump() for x in st.config.links],
             "stage_ir": st.config.export.stage_ir.model_dump(),
+            "menu_images": _menu_fingerprint(st),
         },
         _stage_ir,
         _stage_ir_outputs,

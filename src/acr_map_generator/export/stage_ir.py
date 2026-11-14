@@ -27,6 +27,7 @@ from scipy.spatial import cKDTree
 from ..core import manifest
 from ..core.raster import load_terrain
 from ..core.stage import Stage
+from . import menu_images
 from .gltf import write_glb
 from .pacenotes import make_pacenotes
 from .pacenotes import summary as pacenote_summary
@@ -356,6 +357,8 @@ def export_stage_ir(
         "objects": None,
         "render": render,
         "links": [x.model_dump() for x in stage.config.links],  # extension: reference pages about the real stage
+        # extension: menu images copied to menu/ and where each came from ("local" ones are never released)
+        "menu": menu_images.copy_to(stage, out),
         "structures": structures,  # extension: bridged spans on the road (stage metres), no deck/rail objects yet
         # extension: road surface per stretch, distances on the gates[].distance scale, codes as in collision.meshes
         "surface_segments": [

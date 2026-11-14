@@ -19,7 +19,7 @@ no files.
 Any size is accepted. The builder cover-crops each image (centred, aspect kept) to its targets, so leave margins.
 Use 8-bit RGB or RGBA PNG, under 1 MB each.
 
-## Where the files live (planned layout)
+## Where the files live
 
 ```
 locations/<location_id>.toml        name (menu text), country (ISO 3166 alpha-2), description
@@ -29,11 +29,29 @@ stages/<stage_id>.toml              [stage] location = "<location_id>"
 stages/<stage_id>/art.png
 ```
 
-The Stage IR export copies them into `menu/` in each IR folder. Stages that share a location ship the same logo and
+`<location_id>` is `[stage] location` in the stage file, or the region as a slug ("Corsica" → `corsica`).
+
+The Stage IR export copies them into `menu/` in each IR folder (implemented). The builder reads `menu/logo.png`
+today; tile and art come later. stage.json `menu` records each file's origin. Stages that share a location ship the same logo and
 tile. When a file is missing:
 - **art**: ACR Map Generator renders one from the stage's terrain (a lit 3D view of the road, later with aerial
   imagery), so every stage has artwork.
 - **logo / tile**: the builder's defaults (generated "RALLY <location>" plate, the template location's tile).
+
+## Local-only images
+
+Images you may use privately but not publish, such as an event's real rally plate with its organiser and
+federation marks, go in the git-ignored `local/` folder with the same layout:
+
+```
+local/locations/<location_id>/logo.png
+local/locations/<location_id>/tile.png
+local/stages/<stage_id>/art.png
+```
+
+`local/` wins over the repository's files. The IR marks such images with `"origin": "local"`, so a public release
+bundle leaves them out. Never move them into `locations/` or `stages/`; the content guard only accepts images that
+can be shared under CC BY-SA.
 
 ## Locations and events
 

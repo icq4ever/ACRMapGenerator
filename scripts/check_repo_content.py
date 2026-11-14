@@ -20,8 +20,8 @@ FORBIDDEN_EXT = {
 }  # fmt: skip
 FORBIDDEN_NAME_PARTS = ("oo2core",)  # Oodle libraries
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
-IMAGE_DIRS = ("assets/", "docs/media/")  # images allowed only here (no game art)
-FORBIDDEN_DIRS = ("data/", "private/")
+IMAGE_DIRS = ("assets/", "docs/media/", "locations/", "stages/")  # images allowed only here (no game art)
+FORBIDDEN_DIRS = ("data/", "private/", "local/")
 TEXT_EXT = {".md", ".py", ".toml", ".yml", ".yaml", ".txt", ".json", ".ps1", ".cfg", ".ini"}
 ALLOWED_CONTROL = {9, 10, 13}  # tab, newline, carriage return
 

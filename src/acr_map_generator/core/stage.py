@@ -68,6 +68,8 @@ class StageInfo(_Strict):
     country: str = Field(pattern=r"^[A-Z]{2}$")  # ISO 3166-1 alpha-2
     region: str = ""
     surface: Surface = "asphalt"  # default for every stretch not covered by route.surfaces
+    # menu location id (locations/<id>/ for its logo and tile); default: the region as a slug, e.g. "corsica"
+    location: str | None = Field(default=None, pattern=r"^[a-z0-9_]+$")
 
 
 class RouteConfig(_Strict):
@@ -173,6 +175,17 @@ class Stage:
     @property
     def waypoints(self) -> list[Waypoint]:
         return self.config.route.waypoints
+
+    @property
+    def location_id(self) -> str:
+        info = self.config.stage
+        if info.location:
+            return info.location
+        import unicodedata
+
+        base = info.region or info.country
+        ascii_ = unicodedata.normalize("NFKD", base).encode("ascii", "ignore").decode()
+        return re.sub(r"[^a-z0-9]+", "_", ascii_.lower()).strip("_") or "unknown"
 
     def surface_at(self, s_m):
         """Surface name per distance (m along the centreline), from route.surfaces over stage.surface."""

@@ -18,6 +18,9 @@ CLAUDE.local.md
 # Private notes (business, local context)
 private/
 
+# Local-only assets (e.g. menu images with third-party marks): never committed
+local/
+
 # Tool caches
 .pytest_cache/
 .ruff_cache/

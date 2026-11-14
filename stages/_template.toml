@@ -13,6 +13,7 @@ display_name = "TODO Start – Finish"             # menu/product name: places o
 country = "TODO"                                 # ISO 3166-1 alpha-2, e.g. "FR"
 region = ""                                      # e.g. "Corsica"
 surface = "asphalt"                              # default road surface: "asphalt", "gravel" (hard) or "gravel_loose"
+# location = "corsica"                           # menu location id (locations/<id>/ logo and tile); default: region as a slug
 
 [route]
 roads = []            # road refs the route follows, in order, e.g. ["D 343", "D 243", "D 43"] (OSM `ref`)
