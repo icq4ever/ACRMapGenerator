@@ -5,8 +5,18 @@ ACR Map Generator is licensed under MIT OR Apache-2.0 (see [LICENSE-MIT](LICENSE
 Licences were read from the installed packages' metadata for the versions pinned in `uv.lock`, not
 from memory.
 
-**This repository contains no game content** (nothing from *Assetto Corsa Rally* or any other game) and
-no downloaded geodata. Data is fetched at run time into the git-ignored `data/` folder.
+**This repository contains no game files** (no assets, archives or mappings from *Assetto Corsa Rally* or any
+other game) and no downloaded geodata. Data is fetched at run time into the git-ignored `data/` folder. The only
+game imagery is three menu screenshots in `builder/docs/media/`, part of the upstream builder documentation.
+
+## Bundled source: `builder/`
+
+`builder/` is **ACR Extra Stages** by cherrymcgerry ([cherrymcgerry/acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages)),
+MIT OR Apache-2.0, included as a git subtree from the fork
+[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages) (branch `feature/ir-stages`, which adds
+building from a Stage IR). Its own licence files ([builder/LICENSE-MIT](builder/LICENSE-MIT),
+[builder/LICENSE-APACHE](builder/LICENSE-APACHE)) and third-party notices
+([builder/THIRD_PARTY_NOTICES.md](builder/THIRD_PARTY_NOTICES.md)) apply to everything under `builder/`.
 
 ## Python packages (run time)
 
@@ -37,7 +47,8 @@ pyproj's wheels bundle **PROJ 9.8.1** (MIT). Their licence files ship inside the
 
 - **Stage IR** (`acrxs/stage-ir` v2) is defined by [acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages)
   (MIT OR Apache-2.0). This tool writes files in that format. The surface codes and physical material names in
-  `export/stage_ir.py` follow its `config/surface-map.toml`. No code is copied from it.
+  `export/stage_ir.py` follow its `config/surface-map.toml`. The builder itself is bundled in `builder/` (see above);
+  the Python generator in `src/` does not use its code.
 - **glTF 2.0** (Khronos Group) is written by our own minimal writer (`export/gltf.py`).
 
 ## Data downloaded at run time

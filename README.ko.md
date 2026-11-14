@@ -5,13 +5,18 @@
 공개 지리 데이터(항공 LiDAR 지형과 OpenStreetMap 도로)로 **Assetto Corsa Rally**용 랠리 스테이지를 만드는 도구입니다.
 
 ```
-공개 데이터 (LiDAR, OSM) ──► ACR Map Generator ──► Stage IR ──► acr-extrastages ──► ACR 모드
-                             (이 저장소)                       (스테이지 빌더)
+공개 데이터 (LiDAR, OSM) ──► 생성기 ──► Stage IR ──► 빌더 ──► ACR 스테이지 모드 ──► 다른 스테이지 모드와 함께 설치
+                             (src/)                  (builder/)
 ```
 
-실제 도로를 달릴 수 있는 스테이지로 바꿉니다. 도로 형상, 차가 달리는 물리 지면, 게이트, 계측 지점, 원경 지형을 만들고,
-[acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages)의 중간 형식인 **Stage IR**로 내보냅니다.
-이 IR을 acr-extrastages가 ACR 모드로 빌드합니다. 이 도구는 공개 데이터만 사용하며, 게임 파일은 읽지도 쓰지도 않습니다.
+이 저장소 하나로 실제 도로를 게임 안까지 가져갑니다. **생성기**(`src/`, Python)는 공개 데이터로 도로 형상,
+차가 달리는 물리 지면, 게이트, 계측 지점, 원경 지형을 만들어 **Stage IR**로 내보냅니다. **빌더**(`builder/`)는 이 IR을
+메뉴 항목이 있는 ACR 스테이지 모드로 빌드하고, 다른 스테이지 모드와 함께 설치합니다. 빌더는 cherrymcgerry의
+[ACR Extra Stages](https://github.com/cherrymcgerry/acr-extrastages)를 포크한 것으로, git subtree로 들어 있습니다
+([ACR로 빌드하기](#acr로-빌드하기) 참고).
+
+생성기는 공개 데이터만 사용하며, 게임 파일은 읽지도 쓰지도 않습니다. 빌더는 본인 PC에서 본인이 가진 게임으로 실행됩니다.
+이 저장소에는 게임 파일이 들어 있지 않습니다.
 
 > 초기 단계입니다. 스테이지 하나(코르시카 Muracciole – Noceta, 16.5 km)를 만들어 게임에서 달려 보았습니다.
 > 화면 디테일(지면 텍스처, 나무, 건물)은 아직 없습니다.
@@ -21,7 +26,10 @@
 ## 준비물
 
 - [uv](https://docs.astral.sh/uv/): 처음 실행할 때 Python 3.12와 필요한 패키지를 설치합니다.
-- 선택: 스테이지를 미리 보려면 [Blender](https://www.blender.org/), 게임에 넣으려면 acr-extrastages
+- 선택: 스테이지를 미리 보려면 [Blender](https://www.blender.org/)
+- ACR로 빌드하려면(빌더): Windows, 본인이 가진 Assetto Corsa Rally, [.NET 10 SDK](https://dotnet.microsoft.com/),
+  [PowerShell 7](https://github.com/PowerShell/PowerShell), [Rust](https://rustup.rs/)(retoc과 매핑 도구용), git.
+  빌더의 작업 폴더는 게임과 같은 드라이브에 있어야 합니다(아래 참고).
 
 ## 빠른 시작
 
@@ -45,18 +53,40 @@ blender --python scripts/blender_view_package.py -- data/<stage>/package/<packag
 
 ## ACR로 빌드하기
 
-Stage IR은 [acr-extrastages](https://github.com/cherrymcgerry/acr-extrastages)가 본인 PC에서, 본인이 가진 게임을 사용해
-ACR 모드로 빌드합니다. DR2가 아닌 IR을 빌드하려면 우리 포크의 IR 모드가 필요합니다
-([icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages), `feature/ir-stages` 브랜치, 작업 중).
+`builder/`는 본인 PC에서 본인이 가진 게임을 사용해 Stage IR을 ACR 스테이지 모드로 빌드합니다. cherrymcgerry의
+[ACR Extra Stages](https://github.com/cherrymcgerry/acr-extrastages)(MIT OR Apache-2.0)를 우리 포크
+[icq4ever/acr-extrastages](https://github.com/icq4ever/acr-extrastages)에서 가져온 것입니다. 포크는 DR2 데이터 없이
+Stage IR에서 빌드하기, IR로 메뉴 등록, 페이스노트, 다른 스테이지 모드와 함께 설치하기를 추가했습니다.
+라이선스 파일과 고지문은 `builder/` 안에 있습니다.
 
-```
-pwsh -File scripts\gen-ir-spec.ps1 -Ir <ACRMapGenerator>\data\<stage>\stage_ir\<id> -Id <AcrId>
-pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir\<AcrId>.json -Verify
+처음 한 번 준비할 것([builder/docs/ir-stages.md](builder/docs/ir-stages.md#one-time-setup)에 자세히): 빌더는 게임 파일을
+하드 링크로 재사용하므로 작업 폴더가 **게임과 같은 드라이브**에 있어야 합니다. 그 드라이브의 폴더를 `ACRXS_WORK`로
+지정하고, 그 안에 retoc, 매핑 도구, 설치된 게임 빌드의 usmap을 만들어 둡니다.
+
+```powershell
+$env:ACR_GAME_DIR = '<ACR 폴더>'
+$env:ACRXS_WORK   = '<게임 드라이브의 폴더>'
+$env:ACR_USMAP    = "$env:ACRXS_WORK\mappings\<build>.usmap"
+cd builder
+pwsh -File scripts\gen-ir-spec.ps1 -Ir ..\data\<stage>\stage_ir\<id> -Id <AcrId> -ContentRoot AcrMg   # IR에서 spec 만들기
+pwsh -File mods\additive\build.ps1 -Stages $env:ACRXS_WORK\acr\specs-ir -Prefix zz_acrmg -Verify      # 빌드
+pwsh -File scripts\install-ir-stages.ps1 -Prefix zz_acrmg                                             # 설치 (게임 종료 상태)
+pwsh -File scripts\install-ir-stages.ps1 -Prefix zz_acrmg -Check                                      # 설치가 최신인지 확인
 ```
 
-이 도구로 만든 스테이지는 `zz_acrmg_*` 파일로 만들어집니다. 메뉴의 스테이지 이름, 지역, 국기, 노면, 길이,
-경로·고도 그림은 IR의 `stage.json`에서 가져옵니다.
-자세한 내용은 [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages)를 참고하세요.
+이 도구로 만든 스테이지는 `/Game/AcrMg` 아래 `zz_acrmg_*` 파일로 만들어집니다. 메뉴의 스테이지 이름, 지역, 국기, 노면,
+길이, 로고, 경로·고도 그림은 IR의 `stage.json`에서 가져옵니다. 설치할 때는 이미 설치된 다른 스테이지 모드(Sando,
+Thiérache 등)의 메뉴 표 위에 우리 표를 쌓습니다. 다른 스테이지 모드를 설치, 업데이트, 삭제했거나 게임이 업데이트되면
+설치를 다시 실행하세요.
+
+- **오프라인 전용.** 빌드한 스테이지는 오프라인 싱글 플레이용입니다. 온라인이나 리더보드 모드에서는 쓰지 마세요.
+- **상표가 있는 로고는 로컬에만.** 대회나 연맹 마크가 들어간 로고는 git에 올라가지 않는 `local/` 폴더에 두고,
+  저장소에는 넣지 않습니다([docs/menu-images.md](docs/menu-images.md)).
+
+더 보기: [builder/docs/ir-stages.md](builder/docs/ir-stages.md) (준비, spec 옵션, 빌드, 설치),
+[builder/docs/other-mods.md](builder/docs/other-mods.md) (다른 스테이지 모드와 함께 쓰기),
+[builder/docs/stage-ir.md](builder/docs/stage-ir.md#irs-from-other-producers-no-dr2-data) (IR 규약, "IRs from other
+producers"), [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages).
 
 ## 결과물
 
