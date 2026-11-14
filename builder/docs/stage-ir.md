@@ -389,6 +389,7 @@ ACRMapGenerator): which keys the build reads, which it ignores, and what it expe
 | `surface_segments[]` | `{from, to, surface}`: the longest `surface` picks the menu surface (asphalt / tarmac / concrete / paved -> Tarmac, snow / ice -> Snow, else Gravel) and the vanilla location copied for it (Alsace / Livigno / Wales) | Gravel |
 | `sources.attribution[]` | the location's info-box text ("<location.name>. Built from <attribution>.") | `location.name` |
 | the file `render/vista.glb` (listed in `render[]` as `kind: "vista"`) | distant terrain ring (`--visuals-vista 1`) | no vista |
+| the file `render/ground_bake/manifest.json` (schema `ground_bake/1`, as in "ground_bake" above; **fork extension** for IRs) | ground colour: one BC1 texture and M_Simple MIC per tile on the collision ground, tile UVs; ground over no tile keeps the `[textured]` terrain material. Any top-down colour source works (ACRMapGenerator: aerial imagery) | `[textured]` terrain material everywhere |
 | `pacenotes.tokens[]` | co-driver calls, see below | the host pace note table is emptied (no calls) |
 | `objects` | object collision (`config/object-collision.toml`) | none |
 

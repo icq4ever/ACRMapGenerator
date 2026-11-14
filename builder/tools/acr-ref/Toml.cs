@@ -59,6 +59,16 @@ internal sealed class Toml
         return s;
     }
 
+    /// Copies every key of [from] over [section] (keys missing in [from] keep their value). No-op when [from] is absent.
+    /// Returns whether [from] exists.
+    public bool Overlay(string section, string from)
+    {
+        if (!_t.TryGetValue(from, out var src)) return false;
+        var dst = Section(section);
+        foreach (var (k, v) in src) dst[k] = v;
+        return true;
+    }
+
     public IReadOnlyDictionary<string, object> this[string section] => _t.TryGetValue(section, out var s) ? s : new();
     public string Str(string section, string key) => this[section].TryGetValue(key, out var v) && v is string s ? s : throw new KeyNotFoundException($"[{section}] {key}");
     public double Num(string section, string key) => this[section].TryGetValue(key, out var v) && v is double d ? d : throw new KeyNotFoundException($"[{section}] {key}");

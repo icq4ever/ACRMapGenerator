@@ -102,6 +102,27 @@ def _vista_params(st: Stage) -> dict:
     return {"margin": v.MARGIN, "res": v.RES}
 
 
+def _imagery(st: Stage):
+    from .process.imagery import fetch_imagery
+
+    return fetch_imagery(st)
+
+
+def _imagery_params(st: Stage) -> dict:
+    from dataclasses import asdict
+
+    from .process import imagery as im
+
+    return {"tiers": [asdict(t) for t in im.TIERS], "slack": im.FETCH_SLACK, "provider": _provider(st, "imagery")}
+
+
+def _provider(st: Stage, kind: str) -> str | None:
+    try:
+        return registry.select(kind, st.area).info.id
+    except LookupError:
+        return None
+
+
 def _centreline(st: Stage):
     from .process.centreline import extract_centreline
 
@@ -153,6 +174,15 @@ STEPS: list[Step] = [
     Step("corridor", ("route",), _corridor_params, _corridor, _layer("terrain_fine"), doc="0.5 m DTM around the route"),
     Step("vista", ("route",), _vista_params, _vista, _layer("terrain_vista"), doc="25 m DTM ~5 km around the route"),
     Step(
+        "imagery",
+        ("route",),
+        _imagery_params,
+        _imagery,
+        _layer("imagery"),
+        doc="aerial imagery tiles around the route (ground colour)",
+        optional=lambda st: _provider(st, "imagery") is not None,
+    ),
+    Step(
         "centreline",
         ("terrain", "route", "corridor"),
         lambda st: {},
@@ -178,7 +208,7 @@ STEPS: list[Step] = [
     ),
     Step(
         "stage_ir",
-        ("terrain", "corridor", "vista", "centreline"),
+        ("terrain", "corridor", "vista", "imagery", "centreline"),
         lambda st: {
             "stage": st.config.stage.model_dump(),
             "surfaces": [x.model_dump() for x in st.config.route.surfaces],
@@ -194,6 +224,9 @@ STEPS: list[Step] = [
             "export/terrain_mesh.py",
             "export/gltf.py",
             "export/vista.py",
+            "export/ground_bake.py",
+            "export/dds.py",
+            "process/imagery.py",
             "core/raster.py",
         ),
         doc="Stage IR v2 for the ACR builder",

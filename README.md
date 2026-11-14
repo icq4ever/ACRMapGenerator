@@ -107,6 +107,7 @@ Everything goes to `data/<stage>/` (not versioned):
 |---|---|---|
 | Terrain (0.5–25 m) | IGN LiDAR HD (France incl. Corsica) | Etalab Licence Ouverte 2.0 |
 | Roads (route finding only) | OpenStreetMap via Overpass | ODbL |
+| Ground colour (20 cm) | IGN BD ORTHO aerial imagery | Etalab Licence Ouverte 2.0 |
 
 Credit the sources in anything made with this tool: **© IGN – LiDAR HD (Etalab 2.0)** and
 **© OpenStreetMap contributors (ODbL)**. `manifest.json` lists the attribution for each stage.

@@ -36,9 +36,12 @@ internal static class Visuals
     ///        ([ground] simplify_*; GroundLod.Simplify); also keeps DR2's own triangle winding (RenderGround keepWinding)
     ///   groundBake: (v1.11, render ground + dr2) DR2 ground-bake manifest (render/ground_bake/manifest.json): one terrain
     ///        section, texture and MIC per tile, tile UVs (GroundLod.Split); null = one terrain section, box UVs
+    ///   style: (fork extension) e.g. the menu surface in lower case ("tarmac"): [textured.<style>] in the visuals config
+    ///        overrides [textured] (road material, road UV scales, road colour); no such section = [textured] as is
     internal sealed record Options(string Host, bool Retarget, string? Owner, string Vegetation = "none", string? Canopies = null,
                                    bool Vista = false, bool Textured = false, bool Dr2 = false, string Dr2Revert = "",
-                                   string TerrainUv = "planar", string Ground = "collision", bool GroundLod = false, string? GroundBake = null)
+                                   string TerrainUv = "planar", string Ground = "collision", bool GroundLod = false, string? GroundBake = null,
+                                   string? Style = null)
     {
         public static Options From(IReadOnlyDictionary<string, string> named) => new(
             named.GetValueOrDefault("visuals-host", "start"),
@@ -53,9 +56,19 @@ internal static class Visuals
             named.GetValueOrDefault("visuals-terrain-uv", "planar"),
             named.GetValueOrDefault("visuals-ground", "collision"),
             named.GetValueOrDefault("visuals-ground-lod", "0") != "0",
-            named.GetValueOrDefault("visuals-ground-bake") is { Length: > 0 } gb ? gb : null);
+            named.GetValueOrDefault("visuals-ground-bake") is { Length: > 0 } gb ? gb : null,
+            named.GetValueOrDefault("visuals-style") is { Length: > 0 } st ? st.ToLowerInvariant() : null);
 
         public static readonly string[] Dr2Sections = ["terrain", "road", "vista", "objects"];
+
+        /// The visuals config with this style applied ([textured.<style>] over [textured]). Build and check both load it here.
+        public Toml LoadConfig(string path)
+        {
+            var cfg = Toml.Load(path);
+            if (Style is { } s && !cfg.Overlay("textured", "textured." + s))
+                Console.WriteLine($"visuals: no [textured.{s}] in {path}; style {s} uses [textured] as is");
+            return cfg;
+        }
 
         /// Whether a section gets DR2 textures (dr2 on and the section not reverted).
         public bool Dr2On(string section)
@@ -140,7 +153,7 @@ internal static class Visuals
         foreach (var s in new[] { terrain, road }) for (int i = 0; i < s.Nrm.Count; i++) s.Nrm[i] = s.Nrm[i] == Vector3.Zero ? Vector3.UnitZ : Vector3.Normalize(s.Nrm[i]);
 
         // edge posts every spacing_m along the DR2 gates, both sides; start/finish gates
-        double spacing = cfg.Num("markers", "spacing_m"), w = cfg.Num("markers", "post_width_m") * 100, h = cfg.Num("markers", "post_height_m") * 100;
+        double spacing = PostSpacing(cfg, opt), w = cfg.Num("markers", "post_width_m") * 100, h = cfg.Num("markers", "post_height_m") * 100;
         var posts = new ProcMesh.Section(); var gates = new ProcMesh.Section();
         double next = 0; int postCount = 0;
         var postCentres = new JsonArray();
@@ -202,21 +215,42 @@ internal static class Visuals
         if (opt.GroundBake is { } manifest)
         {
             // section 1 = the first tile, further tiles after the gates; triangles over no tile keep the grass slice below
-            if (!opt.Dr2On("terrain") || opt.Ground != "render") throw new ArgumentException("--visuals-ground-bake needs --visuals-dr2 (terrain not reverted) and --visuals-ground render");
+            // IR stages (fork extension): the textured collision ground takes the tiles; triangles over no tile keep [textured] terrain
+            bool irBake = !opt.Dr2 && opt.Textured;
+            if (!irBake && (!opt.Dr2On("terrain") || opt.Ground != "render"))
+                throw new ArgumentException("--visuals-ground-bake needs --visuals-dr2 (terrain not reverted) and --visuals-ground render, " +
+                                            "or (IR stages) --visuals-textured 1 without --visuals-dr2");
             var tiles = GroundLod.LoadTiles(manifest);
+            // IR stages: a top-down image smears on steep faces (cuttings, banks); those triangles get a tiling rock texture instead
+            ProcMesh.Section? steep = null;
+            if (irBake && cfg["textured"].ContainsKey("bake_max_slope_deg"))
+                (terrain, steep) = SplitBySlope(terrain, cfg.Num("textured", "bake_max_slope_deg"));
             var (used, rest, brep) = GroundLod.Split(terrain, pl, tiles);
             var dir = Path.GetDirectoryName(manifest)!;
             foreach (var (tile, s) in used)
                 bakeSections.Add(($"terrain:{tile.Name}", s, MatPath(dr2!.Mic("bake_" + tile.Name, dr2.TextureFromFile(Path.Combine(dir, tile.Dds), "ground_bake_" + tile.Name)))));
             terrain = bakeSections[0].s; terrainMat = bakeSections[0].mat;
             bakeSections.RemoveAt(0);
-            if (rest.Idx.Count > 0)
+            if (rest.Idx.Count > 0 && irBake) bakeSections.Add(("terrain:rest", rest, Mat("textured", "terrain")));
+            if (steep is { Idx.Count: > 0 })
+            {
+                brep["steep_uv"] = BoxUv(steep, (float)(cfg.Num("textured", "steep_tile_m") * 100));
+                brep["steep_triangles"] = steep.Idx.Count / 3;
+                bakeSections.Add(("terrain:steep", steep, MatPath(dr2!.Mic("steep", cfg.Str("textured", "steep_texture")))));
+            }
+            else if (rest.Idx.Count > 0)
             {
                 dr2Rep["terrain_uv"] = BoxUv(rest, (float)(cfg.Num("dr2_textures", "terrain_tile_m") * 100));
                 bakeSections.Add(("terrain:rest", rest, MatPath(dr2!.Mic("terrain", dr2.Texture(dr2.TerrainTexture)))));
             }
-            dr2Rep["terrain"] = $"ground bake {manifest}: {used.Count} tile sections" + (rest.Idx.Count > 0 ? $", {rest.Idx.Count / 3} triangles over no tile on {dr2!.TerrainTexture}" : "");
-            dr2Rep["ground_bake"] = brep;
+            string restOn = irBake ? "[textured] terrain" : dr2!.TerrainTexture;
+            dr2Rep["terrain"] = $"ground bake {manifest}: {used.Count} tile sections" + (rest.Idx.Count > 0 ? $", {rest.Idx.Count / 3} triangles over no tile on {restOn}" : "");
+            if (irBake)
+            {
+                brep["textures"] = dr2!.TextureCount; brep["mics"] = dr2.MicCount; brep["texture_bytes"] = dr2.TextureBytes;
+                r["ground_bake"] = brep;   // the DR2 report block (dr2Rep) is only written with --visuals-dr2
+            }
+            else dr2Rep["ground_bake"] = brep;
         }
         else if (opt.Dr2On("terrain"))
         {
@@ -236,7 +270,11 @@ internal static class Visuals
             roadMat = MatPath(dr2!.Mic("road", dr2.Texture(dr2.RoadTexture)));
             dr2Rep["road"] = $"{dr2!.RoadTexture} on UV0 = UV1 (0..1 edge to edge, {cfg.Num("textured", "road_uv1_along_m")} m along)";
         }
-        var mats = new List<int> { 0, terrainMat, roadMat, Mat("materials", "posts"), Mat("materials", "gates") };
+        // IR stages (fork extension): plain coloured roadside posts instead of the physics debug colour, when a MIC writer exists
+        int postsMat = IrPosts(cfg, opt) && dr2 is not null && cfg["textured"].ContainsKey("posts_colour")
+            ? MatPath(dr2.Mic("posts", dr2.Texture("posts_colour", Dds.Fmt.BC1, false, 4, 4, [Dds.EncodeBc1(Solid(cfg.Arr("textured", "posts_colour")), 4, 4)])))
+            : Mat("materials", "posts");
+        var mats = new List<int> { 0, terrainMat, roadMat, postsMat, Mat("materials", "gates") };
         var sections = new List<ProcMesh.Section> { dummy, terrain, road, posts, gates };
         var sectionNames = new JsonArray("dummy", "terrain", "road", "posts", "gates");
         foreach (var (name, s, mat) in bakeSections) { sections.Add(s); mats.Add(mat); sectionNames.Add(name); }
@@ -571,7 +609,7 @@ internal static class Visuals
         var boxSecs = new List<ProcMesh.Section> { secs[1] };
         if (opt.GroundBake is not null)
         {
-            var tileIdx = terrainIdx.Where(i => secNames?[i] != "terrain:rest").ToList();
+            var tileIdx = terrainIdx.Where(i => secNames?[i] is not ("terrain:rest" or "terrain:steep")).ToList();
             int uvOut = tileIdx.Sum(i => secs[i].Uv.Count(u => u.X < 0 || u.X > 1 || u.Y < 0 || u.Y > 1));
             int verts = tileIdx.Sum(i => secs[i].Pos.Count);
             int rest = terrainIdx.Where(i => secNames?[i] == "terrain:rest").Sum(i => secs[i].Idx.Count / 3);
@@ -628,7 +666,7 @@ internal static class Visuals
         }
 
         // posts: 20 vertices each, centred on a gate edge point
-        double spacing = cfg.Num("markers", "spacing_m");
+        double spacing = PostSpacing(cfg, opt);
         var edges = new List<Vector2>(); double next = 0;
         foreach (var g in ir.Gates)
         {
@@ -1000,6 +1038,46 @@ internal static class Visuals
     /// Box projection in place: each triangle takes UV0 from the axis plane its face normal points along most (UE
     /// X/Y/Z), one texture repeat every `repeatCm`; vertices are duplicated where triangles on different planes meet
     /// (normals kept smooth).
+    /// (fork extension) IR stages (textured, no DR2 textures) take the edge post spacing from [textured] posts_spacing_m.
+    static bool IrPosts(Toml cfg, Options opt) => opt.Textured && !opt.Dr2 && cfg["textured"].ContainsKey("posts_spacing_m");
+    static double PostSpacing(Toml cfg, Options opt) => IrPosts(cfg, opt) ? cfg.Num("textured", "posts_spacing_m") : cfg.Num("markers", "spacing_m");
+
+    static byte[] Solid(object[] rgb)
+    {
+        var c = rgb.Select(x => Convert.ToByte(x)).ToArray();
+        var px = new byte[16 * 4];
+        for (int i = 0; i < 16; i++) { px[i * 4] = c[0]; px[i * 4 + 1] = c[1]; px[i * 4 + 2] = c[2]; px[i * 4 + 3] = 255; }
+        return px;
+    }
+
+    /// (fork extension) Splits a terrain section into triangles at most maxDeg from level and the steeper rest
+    /// (face normals; positions, normals and UV0 copied).
+    static (ProcMesh.Section flat, ProcMesh.Section steep) SplitBySlope(ProcMesh.Section s, double maxDeg)
+    {
+        double minUp = Math.Cos(maxDeg * Math.PI / 180);
+        var flat = new ProcMesh.Section(); var steep = new ProcMesh.Section();
+        var maps = new[] { new Dictionary<uint, uint>(), new Dictionary<uint, uint>() };
+        for (int t = 0; t + 2 < s.Idx.Count; t += 3)
+        {
+            var a = s.Pos[(int)s.Idx[t]]; var n = Vector3.Cross(s.Pos[(int)s.Idx[t + 1]] - a, s.Pos[(int)s.Idx[t + 2]] - a);
+            float len = n.Length();
+            int k = len > 0 && Math.Abs(n.Z) / len < minUp ? 1 : 0;
+            var dst = k == 1 ? steep : flat;
+            for (int j = 0; j < 3; j++)
+            {
+                uint v = s.Idx[t + j];
+                if (!maps[k].TryGetValue(v, out var nv))
+                {
+                    maps[k][v] = nv = (uint)dst.Pos.Count;
+                    dst.Pos.Add(s.Pos[(int)v]); dst.Nrm.Add(s.Nrm[(int)v]); dst.Uv.Add(s.Uv[(int)v]);
+                }
+                dst.Idx.Add(nv);
+            }
+        }
+        Console.WriteLine($"visuals: ground over {maxDeg} deg: {steep.Idx.Count / 3} of {s.Idx.Count / 3} triangles get the steep material");
+        return (flat, steep);
+    }
+
     static string BoxUv(ProcMesh.Section s, float repeatCm)
     {
         var pos = s.Pos.ToList(); var nrm = s.Nrm.ToList(); var idx = s.Idx.ToList();

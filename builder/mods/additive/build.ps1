@@ -141,6 +141,8 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
             '--visuals', (Join-Path $root 'config\visuals.toml'), '--visuals-host', 'start', '--visuals-retarget', '1',
             '--visuals-vegetation', 'none', '--visuals-textured', '1', '--visuals-terrain-uv', 'box')
         if (Test-Path (Join-Path $ir 'render\vista.glb')) { $sbArgs += @('--visuals-vista', '1') }
+        # road look by the menu surface: [textured.<surface>] in config/visuals.toml (e.g. Tarmac -> Alsace asphalt)
+        if ($s.Location -and $s.Location.Surface) { $sbArgs += @('--visuals-style', $s.Location.Surface.ToLowerInvariant()) }
         # sky: the spec's SkySection when given, else the host (Hafren South) sky as shipped
         if ($s.SkySection) { $sbArgs += @('--sky', (Join-Path $root 'config\sky.toml'), '--sky-section', $s.SkySection) }
     }

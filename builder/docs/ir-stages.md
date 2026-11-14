@@ -72,8 +72,11 @@ pwsh -File mods\additive\build.ps1 -Stages work\acr\specs-ir -Verify
 
 For each spec with `IrDir`, `stage-build` runs without the DR2-only options (no DR2 render ground, canopies or
 default sky) and adds what the IR carries: the vista ring when `render/vista.glb` exists, pace notes when
-`pacenotes.tokens` is non-empty, object collision when `objects` is set. Then the usual overlay, relocate, menu images
-and registry. `-Verify` re-reads everything with CUE4Parse (`work\acr\additive\check\verify.txt`).
+`pacenotes.tokens` is non-empty, object collision when `objects` is set. The road is drawn with the material of the
+spec's `Location.Surface` (`--visuals-style`, `[textured.<surface>]` in `config/visuals.toml`): Tarmac uses Alsace's
+asphalt (`MI_MunsterAsphalt1`) with UVs in the layout of Munster's road meshes; a surface without such a section keeps
+Hafren's gravel road. When the IR has `render/ground_bake/manifest.json`, the ground (the collision mesh minus the road)
+gets those colour tiles (`--visuals-ground-bake`), as new Texture2D / MIC packages in the stage container. Then the usual overlay, relocate, menu images and registry. `-Verify` re-reads everything with CUE4Parse (`work\acr\additive\check\verify.txt`).
 
 Output: `work\acr\additive\dist\<prefix>_s_<id>_P.*` per stage and `<prefix>_registry_P.*`.
 `-Prefix` overrides `$env:ACRXS_PREFIX` (default `zz_acrxs`).

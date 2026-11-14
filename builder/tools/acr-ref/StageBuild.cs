@@ -160,6 +160,7 @@ internal static class StageBuild
             if (vo.Ground != "collision") report["options"]!["visuals_ground"] = vo.Ground;
             if (vo.GroundLod) report["options"]!["visuals_ground_lod"] = true;
             if (vo.GroundBake is not null) report["options"]!["visuals_ground_bake"] = vo.GroundBake;
+            if (vo.Style is not null) report["options"]!["visuals_style"] = vo.Style;
         }
         var road = Road(ir, pl);
 
@@ -738,8 +739,9 @@ internal static class StageBuild
         if (o.Named.GetValueOrDefault("visuals") is { } visualsCfg)
         {
             var vopt = Visuals.Options.From(o.Named);
-            var vcfg = Toml.Load(visualsCfg);
-            var dr2 = vopt.Dr2 ? new Dr2Materials(vcfg, ir.Dir, legacy, outRoot, packageRoot) : null;
+            var vcfg = vopt.LoadConfig(visualsCfg);
+            // texture / MIC writer: DR2 textures, or (IR stages) the ground-bake tiles alone
+            var dr2 = vopt.Dr2 || vopt.GroundBake is not null ? new Dr2Materials(vcfg, ir.Dir, legacy, outRoot, packageRoot) : null;
             r["visuals"] = Visuals.Build(cell, ir, pl, vcfg, vopt, objectShapes, InPhysicsBounds, dr2);
         }
         r["actors"] = actors;
@@ -923,10 +925,11 @@ internal static class StageBuild
                 vo["visuals_vista"]?.GetValue<bool>() ?? false, vo["visuals_textured"]?.GetValue<bool>() ?? false,
                 vo["visuals_dr2"]?.GetValue<bool>() ?? false, vo["visuals_dr2_revert"]?.GetValue<string>() ?? "",
                 vo["visuals_terrain_uv"]?.GetValue<string>() ?? "planar", vo["visuals_ground"]?.GetValue<string>() ?? "collision",
-                vo["visuals_ground_lod"]?.GetValue<bool>() ?? false, vo["visuals_ground_bake"]?.GetValue<string>());
+                vo["visuals_ground_lod"]?.GetValue<bool>() ?? false, vo["visuals_ground_bake"]?.GetValue<string>(),
+                vo["visuals_style"]?.GetValue<string>());
             RoadProbe? probe = vo["objects"]?.GetValue<string>() is { } objCfg
                 ? NewProbe(ir, pl, objCfg) : null;
-            failures += Visuals.Check(new LegacyPackage(HostPaths.Resolve(root, HostPaths.Cell)), ir, pl, Toml.Load(visualsCfg), opt, w,
+            failures += Visuals.Check(new LegacyPackage(HostPaths.Resolve(root, HostPaths.Cell)), ir, pl, opt.LoadConfig(visualsCfg), opt, w,
                                       report["cell"]?["visuals"], probe, root, report["options"]?["package_root"]?.GetValue<string>());
         }
 

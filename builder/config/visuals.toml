@@ -102,6 +102,30 @@ road_traj_along_m = 100
 road_color = [0, 128, 0, 10]    # RGBA vertex colour; Hafren's road vertices are R ~0, G 128, B 0, A mostly < 20
 road_follow_max_m = 15          # road-surface triangles further from the DR2 centreline (side roads) get world-planar UVs
 road_stretch_min_fraction = 0.95  # offline check: road triangles whose UV0 scale is within 1.5x of nominal
+# fork extension, textured without DR2 textures (IR stages): roadside posts like French delineators instead of the physics
+# debug colour (needs the ground bake's MIC writer, else the [materials] posts colour stays), and with a ground bake,
+# ground steeper than bake_max_slope_deg gets a tiling rock texture (box UVs) instead of the smeared top-down image
+posts_spacing_m = 50
+posts_colour = [225, 225, 220]
+# Off: on the first IR stage the "steep" ground was mostly forested 35-degree hillside whose LiDAR triangles exceed 40
+# degrees locally (LiDAR HD cross-sections), so whole slopes turned into bare rock walls. Set the key to enable.
+# bake_max_slope_deg = 40
+steep_texture = "/Game/Props/MonteCarloProps/MonBolRockfaces/T_Rock_Surface_rmshykp0_2K_D"   # 2048 DXT1 sRGB, not VT
+steep_tile_m = 4
+
+[textured.tarmac]
+# fork extension, IR stages: stage-build --visuals-style tarmac (build.ps1 passes the spec's Location.Surface) overrides the
+# [textured] keys below. Alsace asphalt (parent M_AsphaltMaster_Adv) in the layout of Munster's road meshes (acr-ref mesh-uv
+# SM_AlsaceS2MunsterTrack0101_Road_0: UV0 2.29 m across x 3.9 m along, UV1 0..1 edge to edge x 7.9 m, UV2/UV4 trajectory
+# 5.5 m x 100 m). Vertex colour: 55% of the road-centre vertices of three Munster road meshes are (0, 0, 0, 0); G rises
+# in patches (variation), A stays low.
+# MI_MunsterAsphalt1 (M_AsphaltMaster_Adv: dust, grime, tyre marks, patches) read dusty brown in game on the first IR test;
+# the Simple variant (M_AsphaltSimple: the same Alsace asphalt textures, macro variation only) reads as grey asphalt.
+road = "/Game/Environments/AlsaceS4Saverne/AsphaltMaterial/MI_SaverneAsphalt1Simple"
+road_uv0_across_m = 2.3
+road_uv0_along_m = 3.9
+road_uv1_along_m = 7.9
+road_color = [0, 0, 0, 0]
 
 [dr2_textures]
 # only with stage-build --visuals-dr2 1 (build.ps1 v1.8, on top of [textured]): DR2's own textures (dr2-extract

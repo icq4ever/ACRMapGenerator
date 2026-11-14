@@ -29,6 +29,7 @@ from ..core.raster import load_terrain
 from ..core.stage import Stage
 from . import menu_images
 from .gltf import write_glb
+from .ground_bake import write_ground_bake
 from .pacenotes import make_pacenotes
 from .pacenotes import summary as pacenote_summary
 from .terrain_mesh import ZONES_LIGHT, Frame, build_tiles
@@ -281,6 +282,10 @@ def export_stage_ir(
         )
         print(f"  vista: {len(vtri):,} triangles, {np.ptp(vpts[:, 0]) / 1000:.1f} x {np.ptp(vpts[:, 1]) / 1000:.1f} km")
 
+    # Ground colour from aerial imagery (optional: needs the imagery layer)
+    ge, gn = frame.to_proj(c3[:, 0], c3[:, 1])
+    ground_bake = write_ground_bake(area, out, ox, oy, np.column_stack([ge, gn]))
+
     # Self-checks (same intent as the DR2 exporter's validation block)
     up = []
     for v in prims.values():
@@ -356,6 +361,7 @@ def export_stage_ir(
         ],
         "objects": None,
         "render": render,
+        "ground_bake": ground_bake,  # render/ground_bake/manifest.json summary (aerial imagery), or None
         "links": [x.model_dump() for x in stage.config.links],  # extension: reference pages about the real stage
         # extension: menu images copied to menu/ and where each came from ("local" ones are never released)
         "menu": menu_images.copy_to(stage, out),
