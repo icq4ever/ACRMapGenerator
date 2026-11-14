@@ -52,3 +52,18 @@ def test_severity_scale():
     assert severity(90, 20) in {"2", "1"}
     assert severity(170, 6) == "hairpin"
     assert severity(90, 12) == "square"
+
+
+def test_long_chains_are_split():
+    # eight short S-bends 30 m apart: one call would drift, so they must be split
+    segs = [("straight", 300)]
+    for i in range(8):
+        segs += [("arc", 30, 60 if i % 2 else -60), ("straight", 30)]
+    segs += [("straight", 300)]
+    p, s = _road(segs)
+    corners, _ = _corners(p, s)
+    per_call = {}
+    for c in corners:
+        per_call.setdefault(c["call"], []).append(c)
+    assert len(corners) >= 6
+    assert max(len(v) for v in per_call.values()) <= 4

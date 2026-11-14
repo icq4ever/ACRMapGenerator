@@ -85,11 +85,15 @@ the 60 m chord), level (< 5%) and wide (≥ 5 m), with at least 80 m of run-up b
 ## Pace notes
 
 Corners come from the centreline, smoothed with an 8 m Gaussian first: the LiDAR line's ±0.2 m jitter otherwise reads
-as extra corners. Runs with a radius under 140 m over a ±5 m window that turn at least 10° become corners. Severity
+as extra corners. Runs with a radius under 140 m over a ±5 m window that turn at least 20° become corners. Severity
 comes from sqrt(turn°) / min radius, with cut points calibrated against stock ACR calls; hairpins and squares are
-detected separately. Corners less than 40 m apart are linked into one call. A straight of 40 m or more adds a
-distance call, and calls are read 90 m before the corner. SS8 section: 49 calls, 97 corners (49 linked),
-47 distances. The builder places each call on the built road and reports any call that disagrees with the geometry.
+detected separately. Corners less than 40 m apart are linked into one call, at most 4 per call, and none more than
+150 m past the read point. The builder walks a call's corners along the built road, so a long chain drifts onto the
+wrong bends. A straight of 40 m or more adds a distance call, and calls are read 90 m before the corner.
+
+SS8 section, checked by the builder against the built road: the first version (10° minimum, unbounded chains) had
+2 of 145 calls on the wrong bend, both in one 8-corner chain. Now there are 60 calls, 70 corners (at most 2 per call)
+and 37 distances.
 
 ## Road surfaces
 
