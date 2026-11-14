@@ -75,6 +75,14 @@ Shipped road geometry is measured from LiDAR. OSM is used only to find the route
 - [docs/licensing.md](docs/licensing.md): licences of this repo, the source data and built stages
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to add stages, data sources and code
 
+## Support
+
+If you find ACR Map Generator useful, consider supporting its development:
+
+- [GitHub Sponsors](https://github.com/sponsors/icq4ever)
+- Kakao Pay: <br/>
+<img src="assets/kakaoDonation.jpg" alt="Kakao Pay" width="300">
+
 ## Licence
 
 - Code and docs: MIT OR Apache-2.0, at your option ([LICENSE-MIT](LICENSE-MIT), [LICENSE-APACHE](LICENSE-APACHE)).
