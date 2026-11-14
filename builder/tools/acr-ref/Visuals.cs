@@ -36,9 +36,12 @@ internal static class Visuals
     ///        ([ground] simplify_*; GroundLod.Simplify); also keeps DR2's own triangle winding (RenderGround keepWinding)
     ///   groundBake: (v1.11, render ground + dr2) DR2 ground-bake manifest (render/ground_bake/manifest.json): one terrain
     ///        section, texture and MIC per tile, tile UVs (GroundLod.Split); null = one terrain section, box UVs
+    ///   style: (fork extension) e.g. the menu surface in lower case ("tarmac"): [textured.<style>] in the visuals config
+    ///        overrides [textured] (road material, road UV scales, road colour); no such section = [textured] as is
     internal sealed record Options(string Host, bool Retarget, string? Owner, string Vegetation = "none", string? Canopies = null,
                                    bool Vista = false, bool Textured = false, bool Dr2 = false, string Dr2Revert = "",
-                                   string TerrainUv = "planar", string Ground = "collision", bool GroundLod = false, string? GroundBake = null)
+                                   string TerrainUv = "planar", string Ground = "collision", bool GroundLod = false, string? GroundBake = null,
+                                   string? Style = null)
     {
         public static Options From(IReadOnlyDictionary<string, string> named) => new(
             named.GetValueOrDefault("visuals-host", "start"),
@@ -53,9 +56,19 @@ internal static class Visuals
             named.GetValueOrDefault("visuals-terrain-uv", "planar"),
             named.GetValueOrDefault("visuals-ground", "collision"),
             named.GetValueOrDefault("visuals-ground-lod", "0") != "0",
-            named.GetValueOrDefault("visuals-ground-bake") is { Length: > 0 } gb ? gb : null);
+            named.GetValueOrDefault("visuals-ground-bake") is { Length: > 0 } gb ? gb : null,
+            named.GetValueOrDefault("visuals-style") is { Length: > 0 } st ? st.ToLowerInvariant() : null);
 
         public static readonly string[] Dr2Sections = ["terrain", "road", "vista", "objects"];
+
+        /// The visuals config with this style applied ([textured.<style>] over [textured]). Build and check both load it here.
+        public Toml LoadConfig(string path)
+        {
+            var cfg = Toml.Load(path);
+            if (Style is { } s && !cfg.Overlay("textured", "textured." + s))
+                Console.WriteLine($"visuals: no [textured.{s}] in {path}; style {s} uses [textured] as is");
+            return cfg;
+        }
 
         /// Whether a section gets DR2 textures (dr2 on and the section not reverted).
         public bool Dr2On(string section)
