@@ -6,7 +6,8 @@ namespace AcrAdditive;
 
 /// Main-menu images of a new location (docs/menu-images.md): the location tile (DT_TracksLocations.BackgroundImage, cropped
 /// from DR2's loading art) and the rally plate logo (DT_TracksLocations.Logo, drawn by scripts/menu-location-logos.ps1).
-/// Both live in the registry container under /Game/AcrXs/Locations/<Row>/, with rows AcrXs<Row> appended to
+/// Both live in the registry container under <root>/Locations/<Row>/ (root from the spec's Level, /Game/AcrXs by default),
+/// with rows <RootName><Row> (e.g. AcrXsCorsica) appended to
 /// DT_TracksLocationsBackgrounds / DT_TracksLocationsLogos. Also the surface rows a location's stages copy.
 internal static class MenuLocations
 {
@@ -27,9 +28,9 @@ internal static class MenuLocations
     };
     public static readonly string[] VariantSurfaceFields = ["SurfaceTypes", "CarSetupDefaultSurfaceType", "TireCompounds"];
 
-    public static string Row(string location) => $"AcrXs{location}";
-    public static string Package(string location, string kind) => $"/Game/AcrXs/Locations/{location}/T_{location}_{kind}";
-    public static string ObjectPath(string location, string kind) => $"{Package(location, kind)}.T_{location}_{kind}";
+    public static string Row(StageSpec.LocationSpec l) => $"{l.Root[(l.Root.LastIndexOf('/') + 1)..]}{l.Row}";
+    public static string Package(StageSpec.LocationSpec l, string kind) => $"{l.Root}/Locations/{l.Row}/T_{l.Row}_{kind}";
+    public static string ObjectPath(StageSpec.LocationSpec l, string kind) => $"{Package(l, kind)}.T_{l.Row}_{kind}";
 
     /// Generated images of a location the registry creates (Template set): a tile unless a vanilla Tile row is named, a logo unless a vanilla Logo is.
     public static IEnumerable<Image> For(StageSpec.LocationSpec l)
@@ -70,7 +71,7 @@ internal static class MenuLocations
                     (rgba, w, h) = ReadPng(from);
                     if (w != img.W || h != img.H) throw new InvalidDataException($"{from}: {w}x{h}, expected {img.W}x{img.H}");
                 }
-                var path = UiTexture.WriteRgba(o.Named["legacy"], img.Template, Package(l.Row, img.Kind), img.W, img.H, rgba, o.Named["out"]);
+                var path = UiTexture.WriteRgba(o.Named["legacy"], img.Template, Package(l, img.Kind), img.W, img.H, rgba, o.Named["out"]);
                 Console.WriteLine($"location {l.Row} {img.Kind}: {path} ({img.W}x{img.H}, from {Path.GetFileName(from)})");
                 if (preview is not null) Dds.WritePng(Path.Combine(preview, $"{l.Row}.{img.Kind}.png"), img.W, img.H, rgba);
             }

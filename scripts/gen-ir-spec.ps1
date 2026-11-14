@@ -20,6 +20,8 @@ param(
     [Parameter(Mandatory)][string]$Ir,          # Stage IR folder (holds stage.json)
     [Parameter(Mandatory)][string]$Id,          # ACR row / package name of the stage: letters and digits, e.g. AmgMurNoc01
     [string]$OutDir = (Join-Path (Split-Path $PSScriptRoot) 'work\acr\specs-ir'),
+    # content root of the stage's packages, /Game/<ContentRoot>/Stages/<Id>/... (default AcrXs, or $env:ACRXS_CONTENT_ROOT)
+    [string]$ContentRoot = $(if ($env:ACRXS_CONTENT_ROOT) { $env:ACRXS_CONTENT_ROOT } else { 'AcrXs' }),
     [string]$LocationRow,                       # DT_TracksLocations row (default: the location name in PascalCase)
     [string]$LocationName,                      # menu text (default: location.name up to the first comma)
     [string]$Description,                       # location info box (default: "<location.name>. Built from <attribution>.")
@@ -35,6 +37,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 if ($Id -notmatch '^[A-Za-z][A-Za-z0-9]*$') { throw "-Id must be letters and digits, starting with a letter: $Id" }
+if ($ContentRoot -notmatch '^[A-Za-z][A-Za-z0-9]*$') { throw "-ContentRoot must be letters and digits, starting with a letter: $ContentRoot" }
 $irDir = (Resolve-Path $Ir).Path
 $stageJson = Join-Path $irDir 'stage.json'
 if (-not (Test-Path $stageJson)) { throw "no stage.json in $irDir" }
@@ -130,16 +133,16 @@ $loc.Surface = $Surface
 $spec = [ordered]@{
     Id       = $Id
     IrDir    = $irDir
-    Level    = "/Game/AcrXs/Stages/$Id/$Id"
+    Level    = "/Game/$ContentRoot/Stages/$Id/$Id"
     Location = $loc
     # Track.Name / Variants[].Name / StageName: left empty, acr-additive reads them from the IR's `name`
     Track    = [ordered]@{ Template = 'WalesS4HafrenSouth' }
     Variants = @([ordered]@{ Row = "${Id}FullForward"; Template = 'WelesS4HafrenSouthFullForward'; Length = $km })
     Clone    = [ordered]@{
         Packages = [ordered]@{
-            '/Game/Levels/WalesS4HafrenSouth' = "/Game/AcrXs/Stages/$Id/$Id"
-            '/Game/Environments/WalesS4HafrenSouth/DataAssets/DA_WalesS4HafrenSouthBakedData' = "/Game/AcrXs/Stages/$Id/DA_${Id}BakedData"
-            '/Game/Data/Pacenote/Tables/DT_PacenoteHafrenSouthForward' = "/Game/AcrXs/Stages/$Id/DT_Pacenote${Id}Forward"
+            '/Game/Levels/WalesS4HafrenSouth' = "/Game/$ContentRoot/Stages/$Id/$Id"
+            '/Game/Environments/WalesS4HafrenSouth/DataAssets/DA_WalesS4HafrenSouthBakedData' = "/Game/$ContentRoot/Stages/$Id/DA_${Id}BakedData"
+            '/Game/Data/Pacenote/Tables/DT_PacenoteHafrenSouthForward' = "/Game/$ContentRoot/Stages/$Id/DT_Pacenote${Id}Forward"
         }
         Objects  = [ordered]@{
             'WalesS4HafrenSouth' = $Id

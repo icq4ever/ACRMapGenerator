@@ -47,8 +47,8 @@ internal static class Program
           acr-additive dt-selftest --legacy <root>                         DB table decode/encode round trip
           acr-additive relocate --legacy <root> --out <mod> --map /Game/a=/Game/b... [--object A=B...]
           acr-additive registry --legacy <root> --out <mod> [--ir-root <work/ir>] <stage spec dir|json>...
-          acr-additive verify --vanilla <dir> --game <dir with mods> --spec <stage spec dir> [--ir-root <work/ir>] [--out <report>]
-          acr-additive menu-assets --ir <work/ir/stage> --id <AcrXsXX> --legacy <root> --out <mod> [--art <DR2 loading tpk>] [--preview <dir>]
+          acr-additive verify --vanilla <dir> --game <dir with mods> --spec <stage spec dir> [--ir-root <work/ir>] [--out <report>] [--prefix zz_acrxs]
+          acr-additive menu-assets --ir <work/ir/stage> --id <AcrXsXX> --legacy <root> --out <mod> [--art <DR2 loading tpk>] [--preview <dir>] [--root /Game/AcrXs]
           acr-additive menu-locations --legacy <root> --out <mod> --art-dir <dir> --logo-dir <dir> [--preview <dir>] <stage spec dir|json>...
           acr-additive db-rows --table </Game/... DataTable> --out <json> [--game <dir>]
           acr-additive menu-dump --track <DT_Tracks row> --out <dir>       menu images as PNG (docs/menu-images.md)

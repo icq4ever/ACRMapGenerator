@@ -8,11 +8,13 @@
            - Clone-only specs (no .Stage): relocate a vanilla Hafren copy (prototype / menu gate).
            - Port specs (.Stage = DR2 id): stage-build --additive, overlay on vanilla Hafren, relocate.
            - IR specs (.IrDir = a Stage IR v2 folder from another producer, no DR2 data): same, without the DR2-only options.
-  Outputs: work\acr\additive\dist\zz_acrxs_registry_P.*
-           work\acr\additive\dist\zz_acrxs_s_<id>_P.*
+  Outputs: work\acr\additive\dist\<prefix>_registry_P.*
+           work\acr\additive\dist\<prefix>_s_<id>_P.*
            work\acr\additive\check\verify.txt  (with -Verify)
+  Each stage's own packages live under the content root of its spec's Level (/Game/<Root>/Stages/<Id>/...), /Game/AcrXs by default.
 
 .PARAMETER Stages  stage spec folder or files (default work\acr\specs; hand-written prototypes: mods\additive\stages-prototype)
+.PARAMETER Prefix  container file prefix (default zz_acrxs, or $env:ACRXS_PREFIX); a fork with its own prefix never collides with this project's files
 .PARAMETER Only    build only these stage ids (the registry still lists every spec unless -PassedOnly)
 .PARAMETER PassedOnly  registry lists only stages whose containers exist in dist (for batch builds)
 .PARAMETER Verify  re-read the built containers with CUE4Parse and run the offline checks
@@ -27,8 +29,10 @@ param(
     [switch]$SkipToolBuild,    # batch: acr-ref / acr-additive were already built
     [string]$Game = $(if ($env:ACR_GAME_DIR) { $env:ACR_GAME_DIR } else { 'C:\Program Files (x86)\Steam\steamapps\common\Assetto Corsa Rally' }),
     [string]$Retoc,
+    [string]$Prefix = $(if ($env:ACRXS_PREFIX) { $env:ACRXS_PREFIX } else { 'zz_acrxs' }),
     [switch]$Verify
 )
+if ($Prefix -notmatch '^[a-z][a-z0-9_]*$') { throw "-Prefix must be lowercase letters, digits and _: $Prefix" }
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path "$PSScriptRoot\..\..").Path
 $work = Join-Path $root 'work\acr\additive'
@@ -83,6 +87,12 @@ function New-StageOverlay([string]$VanillaLegacy, [string]$StageMod, [string]$Ou
     Copy-Tree $StageMod $Out
 }
 
+function Get-ContentRoot($s) {
+    # content root folder of the spec's Level (/Game/<Root>/Stages/<Id>/<Id>), as acr-additive's StageSpec.Root reads it
+    if ($s.Level -match '^/Game/([^/]+)/') { return $Matches[1] }
+    return 'AcrXs'
+}
+
 function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$acrRef, [string]$additiveTool) {
     $id = $s.Id
     $idLower = $id.ToLowerInvariant()
@@ -94,7 +104,8 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
         if ($irMode) { throw "${id}: no stage.json in IrDir $ir" }
         throw "${id}: no stage IR at $ir (run dr2-extract stage-ir $stageId --render)"
     }
-    $packageRoot = "/Game/AcrXs/Stages/$id"
+    $contentRoot = Get-ContentRoot $s
+    $packageRoot = "/Game/$contentRoot/Stages/$id"
     $mod = Join-Path $work "mod-build-$idLower"
     $report = Join-Path $work "stage-$idLower.report.json"
     Remove-Item -Recurse -Force $mod -ErrorAction SilentlyContinue
@@ -161,14 +172,15 @@ function Build-PortedStage($s, [string]$legacy, [string]$vanillaGame, [string]$a
     # the overlay (full Hafren tree + stage-build output) is only relocate's input: drop it now, before the heavy retoc step
     if (-not $KeepTemp) { Remove-Item -Recurse -Force $overlay -ErrorAction SilentlyContinue }
 
-    # Tex/Mat already live under /Game/AcrXs/Stages/<Id>/… (not relocated); copy into the stage container.
+    # Tex/Mat already live under /Game/<Root>/Stages/<Id>/… (not relocated); copy into the stage container.
     foreach ($sub in @('Tex', 'Mat')) {
-        $src = Join-Path $mod ("acr\Content\AcrXs\Stages\$id\$sub")
-        if (Test-Path $src) { Copy-Tree $src (Join-Path $outMod "acr\Content\AcrXs\Stages\$id\$sub") }
+        $src = Join-Path $mod ("acr\Content\$contentRoot\Stages\$id\$sub")
+        if (Test-Path $src) { Copy-Tree $src (Join-Path $outMod "acr\Content\$contentRoot\Stages\$id\$sub") }
     }
-    # Menu.Images: route map, track map and elevation profile as UI textures under /Game/AcrXs/Stages/<Id>/Menu (docs/menu-images.md)
+    # Menu.Images: route map, track map and elevation profile as UI textures under /Game/<Root>/Stages/<Id>/Menu (docs/menu-images.md)
     if ($s.Menu -and $s.Menu.Images) {
-        $menuArgs = @('menu-assets', '--ir', $ir, '--id', $id, '--legacy', $legacy, '--out', $outMod, '--preview', (Join-Path $root "work\acr\menu-preview\$id"))
+        $menuArgs = @('menu-assets', '--ir', $ir, '--id', $id, '--legacy', $legacy, '--out', $outMod, '--preview', (Join-Path $root "work\acr\menu-preview\$id"),
+            '--root', "/Game/$contentRoot")
         if ($s.Menu.Art) {
             $art = Join-Path $root "work\dr2\menu-art\frontend\streamed_textures\loading\$($s.Menu.Art).tpk"
             if (-not (Test-Path $art)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
@@ -252,8 +264,8 @@ foreach ($s in $specs) {
             foreach ($p in $s.Clone.Objects.PSObject.Properties) { $relArgs += @('--object', "$($p.Name)=$($p.Value)") }
             Run $tool @relArgs
         }
-        Remove-Item (Join-Path $dist "zz_acrxs_s_${id}_P.*") -ErrorAction SilentlyContinue
-        Run $Retoc to-zen --version UE5_6 $outMod (Join-Path $dist "zz_acrxs_s_${id}_P.utoc")
+        Remove-Item (Join-Path $dist "${Prefix}_s_${id}_P.*") -ErrorAction SilentlyContinue
+        Run $Retoc to-zen --version UE5_6 $outMod (Join-Path $dist "${Prefix}_s_${id}_P.utoc")
         $builtSpecs += $s
     }
     finally {
@@ -271,7 +283,7 @@ $regSpecs = [string[]]@(if ($PassedOnly) {
     $specFiles | % {
         $sp = Get-Content $_ -Raw | ConvertFrom-Json
         $id = $sp.Id.ToLowerInvariant()
-        if (Test-Path (Join-Path $dist "zz_acrxs_s_${id}_P.utoc")) { $_ }
+        if (Test-Path (Join-Path $dist "${Prefix}_s_${id}_P.utoc")) { $_ }
     }
 } else { $specFiles })
 $reg = Join-Path $work 'mod-registry'
@@ -287,8 +299,8 @@ if (-not $SkipRegistry) {
     $needArt = @($regSpecs | ? { (Get-Content $_ -Raw | ConvertFrom-Json).Location.TileArt })
     if ($needArt -and -not (Test-Path $artDir)) { & pwsh -NoProfile -File (Join-Path $root 'scripts\prepare-menu-art.ps1') | Out-Host }
     Run $tool menu-locations --legacy $legacy --out $reg --art-dir $artDir --logo-dir $logoDir --preview (Join-Path $root 'work\acr\menu-preview\locations') @regSpecs
-    Remove-Item (Join-Path $dist 'zz_acrxs_registry_P.*') -ErrorAction SilentlyContinue
-    Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist 'zz_acrxs_registry_P.utoc')
+    Remove-Item (Join-Path $dist "${Prefix}_registry_P.*") -ErrorAction SilentlyContinue
+    Run $Retoc to-zen --version UE5_6 $reg (Join-Path $dist "${Prefix}_registry_P.utoc")
 }
 
 if ($Verify -and -not $SkipRegistry) {
@@ -297,14 +309,14 @@ if ($Verify -and -not $SkipRegistry) {
     Remove-Item -Recurse -Force $check -ErrorAction SilentlyContinue
     New-Item -ItemType Directory -Force $full | Out-Null
     Get-ChildItem $paks -File | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
-    Get-ChildItem $dist -File 'zz_acrxs_*' | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
+    Get-ChildItem $dist -File "${Prefix}_*" | % { New-Item -ItemType HardLink -Path (Join-Path $full $_.Name) -Target $_.FullName | Out-Null }
     $specDir = Join-Path $check 'specs'
     New-Item -ItemType Directory -Force $specDir | Out-Null
     $regSpecs | % { Copy-Item $_ $specDir }
-    Run $tool verify --vanilla $vanilla --game $check --spec $specDir --ir-root (Join-Path $root 'work\ir') --out (Join-Path $check 'verify.txt')
+    Run $tool verify --vanilla $vanilla --game $check --spec $specDir --ir-root (Join-Path $root 'work\ir') --out (Join-Path $check 'verify.txt') --prefix $Prefix
     $rtPaks = Join-Path $check 'roundtrip-paks'
     New-Item -ItemType Directory -Force $rtPaks | Out-Null
-    Copy-Item (Join-Path $paks 'global.*'), (Join-Path $dist 'zz_acrxs_registry_P.*') $rtPaks
+    Copy-Item (Join-Path $paks 'global.*'), (Join-Path $dist "${Prefix}_registry_P.*") $rtPaks
     $rt = Join-Path $check 'roundtrip'
     Run $Retoc to-legacy --version UE5_6 --no-shaders $rtPaks $rt
     $uexp = @(Get-ChildItem $reg -Recurse -File -Filter *.uexp)
@@ -315,4 +327,4 @@ if ($Verify -and -not $SkipRegistry) {
     Write-Host "registry round trip: $($uexp.Count) tables' export data byte-identical"
 }
 
-Get-ChildItem $dist 'zz_acrxs_*' | Format-Table Name, @{ n = 'MB'; e = { [math]::Round($_.Length / 1MB, 2) } }
+Get-ChildItem $dist "${Prefix}_*" | Format-Table Name, @{ n = 'MB'; e = { [math]::Round($_.Length / 1MB, 2) } }

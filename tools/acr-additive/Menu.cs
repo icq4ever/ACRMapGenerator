@@ -57,16 +57,17 @@ internal static class Menu
     ];
 
     public static IEnumerable<Image> For(StageSpec s) => Images.Where(i => !i.Art || s.Menu?.Art is not null);
-    public static string Package(string id, string kind) => $"/Game/AcrXs/Stages/{id}/Menu/T_{id}_{kind}";
-    public static string ObjectPath(string id, string kind) => $"{Package(id, kind)}.T_{id}_{kind}";
+    public static string Package(string root, string id, string kind) => $"{root}/Stages/{id}/Menu/T_{id}_{kind}";
+    public static string ObjectPath(string root, string id, string kind) => $"{Package(root, id, kind)}.T_{id}_{kind}";
     public static string TextureRow(string id, string kind) => $"{id}_{kind}";
 
     /// `menu-assets --ir <work/ir/stage> --id <AcrXsXX> --legacy <root with the templates> --out <mod root> [--art <DR2 loading .tpk>]
-    /// [--preview <dir>]`: the track map, variant map and elevation profile (and with --art the track backdrop, variant banner and
-    /// lobby thumbnail cropped from DR2's loading art) as UI textures under /Game/AcrXs/Stages/<id>/Menu/ (stage container).
+    /// [--preview <dir>] [--root /Game/AcrXs]`: the track map, variant map and elevation profile (and with --art the track backdrop,
+    /// variant banner and lobby thumbnail cropped from DR2's loading art) as UI textures under <root>/Stages/<id>/Menu/ (stage container).
     public static int Assets(Opts o)
     {
         var id = o.Named["id"];
+        var root = o.Named.GetValueOrDefault("root") ?? StageSpec.DefaultRoot;
         var r = new StageRoute(Path.Combine(o.Named["ir"], "stage.json"));
         var px = new Dictionary<string, byte[]>
         {
@@ -87,7 +88,7 @@ internal static class Menu
             var rgba = px[img.Kind];
             if (rgba.Length != img.W * img.H * 4) throw new InvalidOperationException($"{img.Kind}: {rgba.Length} bytes, template {img.W}x{img.H}");
             var payload = img.Format == "PF_BC7" ? EncodeBc7(rgba, img.W, img.H) : Swap((byte[])rgba.Clone());
-            var path = UiTexture.Write(o.Named["legacy"], img.Template, Package(id, img.Kind), img.W, img.H, img.Format, payload, o.Named["out"]);
+            var path = UiTexture.Write(o.Named["legacy"], img.Template, Package(root, id, img.Kind), img.W, img.H, img.Format, payload, o.Named["out"]);
             Console.WriteLine($"menu {img.Kind}: {path} ({img.W}x{img.H} {img.Format}, from {img.Template}{(img.Art ? $", art {Path.GetFileNameWithoutExtension(artTpk)}" : "")})");
             if (preview is null) continue;
             Dds.WritePng(Path.Combine(preview, $"{id}.{img.Kind}.png"), img.W, img.H, img.Format == "PF_BC7" ? Bc7(payload, img.W, img.H) : rgba);

@@ -24,6 +24,7 @@ internal static class Verify
         "/Game/Data/Database/Main/TrackSelection/DT_TracksLocations",
     ];
     const string TexturesTable = "/Game/Data/Database/Main/TrackSelection/DT_TracksTextures";
+    static string Prefix = "zz_acrxs";   // container file prefix of this run (--prefix)
 
     public static int Run(Opts o)
     {
@@ -40,12 +41,14 @@ internal static class Verify
         // new locations have generated images (append-only, like the others)
         var DbTables = Registry.AllTables(specs).Select(x => "/Game/Data/Database/Main/" + x.file).ToArray();
         var newLocations = MenuLocations.NewLocations(specs);
-        var locationPackages = newLocations.SelectMany(l => MenuLocations.For(l).Select(i => MenuLocations.Package(l.Row, i.Kind))).OrderBy(x => x).ToList();
+        var locationPackages = newLocations.SelectMany(l => MenuLocations.For(l).Select(i => MenuLocations.Package(l, i.Kind))).OrderBy(x => x).ToList();
+        // container file prefix (build.ps1 -Prefix): <prefix>_s_<id>_P stage containers and <prefix>_registry*_P
+        var prefix = Prefix = o.Named.GetValueOrDefault("prefix") ?? "zz_acrxs";
 
         // ---- containers and package ids ----
         var vIndex = Game.PackageIndex(van);
         var mIndex = Game.PackageIndex(mod);
-        var ours = mod.MountedVfs.OfType<IoStoreReader>().Where(r => r.Name.StartsWith("zz_acrxs_", StringComparison.OrdinalIgnoreCase)).ToList();
+        var ours = mod.MountedVfs.OfType<IoStoreReader>().Where(r => r.Name.StartsWith(prefix + "_", StringComparison.OrdinalIgnoreCase)).ToList();
         C(ours.Count >= 2, $"additive containers mounted: {string.Join(", ", ours.Select(r => r.Name))}");
         foreach (var r in ours)
         {
@@ -143,15 +146,15 @@ internal static class Verify
         if (s.Menu!.Images)
         {
             var tex = Rows(mod, TexturesTable);
-            var container = $"zz_acrxs_s_{s.Id.ToLowerInvariant()}_P";
+            var container = $"{Prefix}_s_{s.Id.ToLowerInvariant()}_P";
             foreach (var img in Menu.For(s))
             {
                 var key = Menu.TextureRow(s.Id, img.Kind);
                 var asset = tex.TryGetValue(key, out var j) ? (string)Newtonsoft.Json.Linq.JObject.Parse(j)["AssetPathName"]! : null;
-                var pkg = Menu.Package(s.Id, img.Kind);
+                var pkg = Menu.Package(s.Root, s.Id, img.Kind);
                 var owners = mIndex.TryGetValue(FPackageId.FromName(pkg).id, out var l) ? l.Select(x => x.Container).ToList() : [];
                 string what = "missing";
-                bool ok = asset == Menu.ObjectPath(s.Id, img.Kind) && owners.Count == 1 && owners[0].StartsWith(container, StringComparison.OrdinalIgnoreCase)
+                bool ok = asset == Menu.ObjectPath(s.Root, s.Id, img.Kind) && owners.Count == 1 && owners[0].StartsWith(container, StringComparison.OrdinalIgnoreCase)
                           && !van.TryGetGameFile(pkg + ".uasset", out _);
                 if (ok && mod.TryLoadPackage(pkg + ".uasset", out var p) && p.GetExports().OfType<UTexture2D>().SingleOrDefault() is { } t2d)
                 {
@@ -209,11 +212,11 @@ internal static class Verify
                 continue;
             }
             var asset = Rows(mod, table).TryGetValue(got, out var j) ? (string)Newtonsoft.Json.Linq.JObject.Parse(j)["AssetPathName"]! : null;
-            var pkg = MenuLocations.Package(l.Row, img.Kind);
+            var pkg = MenuLocations.Package(l, img.Kind);
             var owners = mIndex.TryGetValue(FPackageId.FromName(pkg).id, out var o) ? o.Select(x => x.Container).ToList() : [];
             string what = "missing";
-            bool ok = got == MenuLocations.Row(l.Row) && asset == MenuLocations.ObjectPath(l.Row, img.Kind) && owners.Count == 1
-                      && owners[0].StartsWith("zz_acrxs_registry", StringComparison.OrdinalIgnoreCase) && !van.TryGetGameFile(pkg + ".uasset", out _);
+            bool ok = got == MenuLocations.Row(l) && asset == MenuLocations.ObjectPath(l, img.Kind) && owners.Count == 1
+                      && owners[0].StartsWith(Prefix + "_registry", StringComparison.OrdinalIgnoreCase) && !van.TryGetGameFile(pkg + ".uasset", out _);
             if (ok && mod.TryLoadPackage(pkg + ".uasset", out var p) && p.GetExports().OfType<UTexture2D>().SingleOrDefault() is { } t2d)
             {
                 var pd = t2d.PlatformData;

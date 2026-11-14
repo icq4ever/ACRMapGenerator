@@ -34,6 +34,21 @@ internal sealed class StageSpec
         public string? TileArt;            // new location: DR2 loading art (work/dr2/menu-art/.../<TileArt>.tpk) for a generated tile
         public bool GenLogo;               // new location: rally plate logo drawn by scripts/menu-location-logos.ps1 (<logo dir>/<Row>.png)
         public string? Surface;            // Gravel / Tarmac / Snow: location SurfaceTypesData and every variant's surfaces + tyres (MenuLocations.Surfaces)
+        [JsonIgnore] public string Root = DefaultRoot;   // content root of the owning spec (set by Load), for the generated tile / logo
+    }
+
+    public const string DefaultRoot = "/Game/AcrXs";
+
+    /// Content root the stage's own packages live under, taken from Level (/Game/<Root>/Stages/<Id>/<Id>), e.g. /Game/AcrXs.
+    /// Menu textures and generated location images go under the same root, so another fork can use its own (e.g. /Game/AcrMg).
+    [JsonIgnore]
+    public string Root
+    {
+        get
+        {
+            var parts = Level.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length >= 2 && parts[0] == "Game" ? $"/Game/{parts[1]}" : DefaultRoot;
+        }
     }
 
     public sealed class TrackSpec
@@ -59,6 +74,7 @@ internal sealed class StageSpec
     public static StageSpec Load(string path, string? irRoot = null)
     {
         var s = JsonConvert.DeserializeObject<StageSpec>(File.ReadAllText(path)) ?? throw new InvalidDataException(path);
+        s.Location.Root = s.Root;
         if (irRoot is not null || s.IrDir is not null) s.ResolveNames(irRoot);
         return s;
     }
@@ -182,11 +198,11 @@ internal static class Registry
         if (s.Location.Logo is not null) l.Set(I("DBTrackLocation", "Logo"), locs.DbRef("TracksLocationsLogos", s.Location.Logo));
         foreach (var img in MenuLocations.For(s.Location))
         {
-            var key = MenuLocations.Row(locRow);
+            var key = MenuLocations.Row(s.Location);
             NewRow(s.Id, img.Table, key, t, vanilla);
             var tex = t[img.Table];
             var row = tex.Rows[0].Clone(key);
-            row.Set(I("DBTexture", "Value"), tex.SoftPath(MenuLocations.ObjectPath(locRow, img.Kind)));
+            row.Set(I("DBTexture", "Value"), tex.SoftPath(MenuLocations.ObjectPath(s.Location, img.Kind)));
             tex.Rows.Add(row);
             l.Set(I("DBTrackLocation", img.Field), locs.DbRef(img.Table, key));
         }
@@ -290,7 +306,7 @@ internal static class Registry
                 var key = Menu.TextureRow(s.Id, img.Kind);
                 NewRow(s.Id, "TracksTextures", key, t, vanilla);
                 var row = tex.Rows[0].Clone(key);
-                row.Set(I("DBTexture", "Value"), tex.SoftPath(Menu.ObjectPath(s.Id, img.Kind)));
+                row.Set(I("DBTexture", "Value"), tex.SoftPath(Menu.ObjectPath(s.Root, s.Id, img.Kind)));
                 tex.Rows.Add(row);
             }
             tracks[s.Id].Set(I("DBTrack", "Map"), tracks.DbRef("TracksTextures", Menu.TextureRow(s.Id, "Map")));
