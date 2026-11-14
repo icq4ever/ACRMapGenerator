@@ -55,6 +55,13 @@ class SurfaceSegment(_Strict):
         return self
 
 
+class Link(_Strict):
+    """A reference page about the real stage (e.g. its rally-maps.com page). Shown with the stage, never fetched."""
+
+    title: str
+    url: str = Field(pattern=r"^https?://\S+$")
+
+
 class StageInfo(_Strict):
     title: str  # internal name, may mention the event
     display_name: str  # product/menu name: places only, no event trademarks
@@ -120,6 +127,7 @@ class StageConfig(_Strict):
     stage: StageInfo
     route: RouteConfig
     terrain: TerrainConfig = TerrainConfig()
+    links: list[Link] = []  # reference pages, carried into the exports
     reference: dict[str, Any] = {}  # free-form notes about the real stage (e.g. rally_maps)
     export: ExportConfig = ExportConfig()
 

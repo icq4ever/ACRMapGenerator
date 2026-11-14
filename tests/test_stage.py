@@ -43,6 +43,14 @@ def test_unknown_key_rejected():
         parse_stage(VALID.replace('country = "FR"', 'country = "FR"\ncolour = "red"'))
 
 
+def test_links():
+    links = '[[links]]\ntitle = "x"\nurl = "https://example.org/a"\n\n'
+    text = VALID.replace("[export.stage_ir]", links + "[export.stage_ir]")
+    assert parse_stage(text).links[0].url == "https://example.org/a"
+    with pytest.raises(StageError, match="links.0.url"):
+        parse_stage(text.replace("https://example.org/a", "example.org"))
+
+
 def test_bad_country_rejected():
     with pytest.raises(StageError, match="stage.country"):
         parse_stage(VALID.replace('"FR"', '"France"'))

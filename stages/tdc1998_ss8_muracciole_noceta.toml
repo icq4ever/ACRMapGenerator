@@ -42,23 +42,30 @@ crs = "EPSG:2154"
 resolution = 1.0
 margin = 1000
 
-# What rally-maps.com says about this stage (reference only: no geometry is taken from it).
-# rally-maps.com blocks automated fetches; these notes come from web search results and from map
-# screenshots taken by hand (2026-11-14). The name "Muracciole–Vezzani" is jcrr's Assetto Corsa mod, not
-# a rally-maps stage.
-[reference.rally_maps]
+[[links]]
+title = "rally-maps.com: Tour de Corse – Rallye de France 1998, SS8 Muracciole – Noceta"
+url = "https://www.rally-maps.com/Tour-de-Corse-Rallye-de-France-1998/Muracciole-Noceta"
+
+[[links]]
+title = "rally-maps.com: Tour de Corse – Rallye de France 1998"
 url = "https://www.rally-maps.com/Tour-de-Corse-Rallye-de-France-1998"
-event = "Tour de Corse – Rallye de France 1998"
+
+# What rally-maps.com says about this stage (reference only: no geometry is taken from it).
+# rally-maps.com blocks automated fetches; read by hand from the stage page and route tool (2026-11-15).
+# The name "Muracciole–Vezzani" is jcrr's Assetto Corsa mod, not a rally-maps stage.
+[reference.rally_maps]
 stage = "SS8 Muracciole - Noceta"
-length_km = 16.53            # route tool: 2.70 km from start + 13.83 km to finish
-length_km_listed = 16.48     # stage list as shown in search results (1998, also 1999 SS8)
+event = "Tour de Corse – Rallye de France 1998"
+date = "1998-05-05"
+length_km = 16.48            # stage page
+length_km_route_tool = 16.53 # route tool: 2.70 km from start + 13.83 km to finish (our finish is placed at this)
+elevation_m = { highest = 919, lowest = 543, difference = 376 }
+surface = "tarmac 100%"
+note = "start and finish locations are not exact (rally-maps note)"
 direction = "Muracciole (SW) -> Vezzani -> Rospigliani -> Noceta (N)"
 route = "D343 east past Vezzani, D243 north, roundabout (Sarra Mezzana), D43 west through Rospigliani"
-start = "D343 at the SW entrance of Muracciole"
-finish = "D43 south-east of Noceta, before the village"
-surface = "tarmac"
-# Our measurements (centreline, 2026-11-15): 16.55 km; start 618 m, highest 910 m at 8.3 km, finish 544 m;
-# width median 5.8 m. The ACR export starts at 0.21 km (plain start rule), so 16.34 km.
+# Ours (centreline, 2026-11-15): 16.55 km; elevation 544..910 m (difference 366 m); width median 5.8 m.
+# The ACR export starts at 0.21 km (plain start rule), so 16.34 km.
 
 # Distance markers read off the route tool, with where they lie and our centreline distance there
 [[reference.rally_maps.markers]]
@@ -73,28 +80,38 @@ where = "D343 west of Vezzani, before the D243 junction (ours: junction at 10.70
 km = 11.88
 where = "D43 just west of the D243 roundabout (ours: roundabout at 11.72 km)"
 
-# Other editions of the same roads on rally-maps.com (search results)
-[[reference.rally_maps.editions]]
-year = 1999
-stage = "SS8 Muracciole - Noceta"
-length_km = 16.48
-
-[[reference.rally_maps.editions]]
-year = 1991
-stage = "SS11 Muracciole - Noceta"
-length_km = 16.38
-
-[[reference.rally_maps.editions]]
-year = 1987
-stage = "SS6 Muracciole - Pont de Noceta"
-length_km = 21.0
-note = "route derived from start/finish locations (rally-maps note)"
-
-[[reference.rally_maps.editions]]
-year = 1979
-stage = "SS9 Muracciole - Antisanti 1"
-length_km = 20.5
-note = "start/finish locations marked inaccurate (rally-maps note)"
+# Related stages on the same roads ("Related Stages" on the stage page): event, year, stage, length
+[reference.rally_maps.related]
+stages = [
+  ["Rallye National Corte Centre Corse", 2025, "SS5+7 Muracciole - Rospigliani", 12.50],
+  ["Rallye National Corte Centre Corse", 2024, "SS5+7 Muracciole - Rospigliani", 12.90],
+  ["Rallye National Corte Centre Corse", 2023, "SS7+9 Muracciole - Rospigliani", 12.50],
+  ["Aléria Historic Rally Asphalt", 2023, "SS6 Muracciole - Casevecchie", 30.00],
+  ["Rallye National Corte Centre Corse", 2022, "SS5+7 Muracciole - Rospigliani", 12.90],
+  ["Tour de Corse Historique", 2021, "SS4 Murraciole - Casevecchie", 29.17],
+  ["Rallye National de Corti - Centru di Corsica", 2021, "SS5+6+7 I Muraccioli - Noceta", 15.26],
+  ["Aléria Historic Rally", 2021, "SS6 Muracciole - Casevecchie - Euromat", 29.97],
+  ["Tour de Corse", 2017, "SS9 Antisanti - Poggio di Nazza", 53.78],
+  ["Tour de Corse", 2016, "SS9 Antisanti - Poggio di Nazza", 53.78],
+  ["Tour de Corse", 2015, "SS6 Muracciole - Col de Sorba", 48.46],
+  ["Tour de Corse - Rallye de France", 2000, "SS9 Noceta - Muracciole", 16.60],  # same roads, reverse direction
+  ["Tour de Corse - Rallye de France", 1999, "SS8 Muracciole - Noceta", 16.48],
+  ["Tour de Corse - Rallye de France", 1995, "SS6 Muracciole - Noceta", 16.42],
+  ["Tour de Corse - Rallye de France", 1994, "SS6 Muracciole - Les Caselles", 21.00],
+  ["Tour de Corse - Rallye de France", 1993, "SS13 Muracciole - Les Caselles", 21.00],
+  ["Tour de Corse", 1992, "SS11 Muracciole - Noceta", 16.38],
+  ["Tour de Corse", 1991, "SS11 Muracciole - Noceta", 16.38],
+  ["Tour de Corse", 1990, "SS11 Muracciole - Noceta", 16.38],
+  ["Tour de Corse - Rallye de France", 1989, "SS13 Muracciole - Noceta", 16.38],
+  ["Tour de Corse", 1988, "SS9 Muracciole - Pont de Noceta", 21.11],
+  ["Tour de Corse", 1987, "SS6 Muracciole - Pont de Noceta", 21.00],
+  ["Tour de Corse", 1986, "SS9 Campo al Quarcio - Pont de Noceta", 33.77],
+  ["Tour de Corse", 1986, "SS8 Muracciole - Abazzia", 50.00],
+  ["Tour de Corse", 1985, "SS8 Muracciole - Abazzia", 50.00],
+  ["Tour de Corse", 1985, "SS9 Campo al Quarcio - Pont de Noceta", 33.77],
+  ["Tour de Corse", 1982, "SS8 Muracciole - Les Caselles", 21.10],
+  ["Tour de Corse", 1979, "SS9+19 Muracciole - Antisanti", 20.50],
+]
 
 [export.package]
 id = "MuraccioleNoceta"

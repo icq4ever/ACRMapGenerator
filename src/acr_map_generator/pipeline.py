@@ -161,6 +161,7 @@ STEPS: list[Step] = [
         lambda st: {
             "stage": st.config.stage.model_dump(),
             "surfaces": [x.model_dump() for x in st.config.route.surfaces],
+            "links": [x.model_dump() for x in st.config.links],
             "package": st.config.export.package.model_dump(),
         },
         _package,
@@ -175,6 +176,7 @@ STEPS: list[Step] = [
         lambda st: {
             "stage": st.config.stage.model_dump(),
             "surfaces": [x.model_dump() for x in st.config.route.surfaces],
+            "links": [x.model_dump() for x in st.config.links],
             "stage_ir": st.config.export.stage_ir.model_dump(),
         },
         _stage_ir,

@@ -126,6 +126,7 @@ def write_package(stage: Stage) -> Path:
         "road": None,
         "images": {"map_small": "images/map_small.png", "elevation": "images/elevation.png"},
         "attribution": manifest.attributions(area),
+        "links": [x.model_dump() for x in stage.config.links],
         "producer": {"name": "acr-map-generator", "version": version("acr-map-generator")},
     }
     (out / "stage.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")

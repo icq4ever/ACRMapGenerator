@@ -44,6 +44,11 @@ crs = "EPSG:2154"     # working CRS in metres (EPSG:2154 Lambert-93 for France/C
 resolution = 1.0      # base DTM cell size (m); a 0.5 m corridor is fetched around the road anyway
 margin = 1000         # m added around the waypoints for the fetch area
 
+# Reference pages about the real stage, shown with the stage and carried into the exports (never fetched).
+# [[links]]
+# title = "rally-maps.com: <event> <SSn> <start> - <finish>"
+# url = "https://www.rally-maps.com/..."
+
 # Free-form notes about the real stage. Nothing here is used for geometry.
 [reference.rally_maps]
 # url = "https://www.rally-maps.com/..."

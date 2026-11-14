@@ -349,6 +349,7 @@ def export_stage_ir(
         ],
         "objects": None,
         "render": render,
+        "links": [x.model_dump() for x in stage.config.links],  # extension: reference pages about the real stage
         "structures": structures,  # extension: bridged spans on the road (stage metres), no deck/rail objects yet
         # extension: road surface per stretch, distances on the gates[].distance scale, codes as in collision.meshes
         "surface_segments": [
