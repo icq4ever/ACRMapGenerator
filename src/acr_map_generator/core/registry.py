@@ -14,7 +14,7 @@ from typing import Protocol
 
 from .area import Area
 
-KINDS = ("terrain", "roads")
+KINDS = ("terrain", "roads", "imagery")
 
 USER_AGENT = "acr-map-generator/0.1"
 

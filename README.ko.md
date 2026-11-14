@@ -106,6 +106,7 @@ producers"), [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages).
 |---|---|---|
 | 지형 (0.5–25 m) | IGN LiDAR HD (프랑스, 코르시카 포함) | Etalab Licence Ouverte 2.0 |
 | 도로 (경로 찾기에만 사용) | OpenStreetMap (Overpass API) | ODbL |
+| 지면 색 (20 cm) | IGN BD ORTHO 항공사진 | Etalab Licence Ouverte 2.0 |
 
 이 도구로 만든 결과물에는 출처를 표기해 주세요: **© IGN – LiDAR HD (Etalab 2.0)**,
 **© OpenStreetMap contributors (ODbL)**. 스테이지별 표기 문구는 `manifest.json`에 정리됩니다.

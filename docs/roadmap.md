@@ -49,7 +49,9 @@
   distribution, low-confidence stretches, bridges, grade audit, map thumbnails. Used for contribution review and,
   later, the platform's stage pages.
 - **Visual detail:**
-  1. Aerial imagery (IGN BD ORTHO) as ground colour. acr-extrastages has a ground-bake input.
+  1. Aerial imagery (IGN BD ORTHO) as ground colour: `imagery` step + `render/ground_bake` in the IR, drawn by the
+     builder on the collision ground (2026-11-15, in-game test pending). Road: Alsace asphalt on tarmac stages.
+     Next: imagery on the vista ring.
   2. Trees from LiDAR canopy height / classified points, placed as IR objects with trunk collision.
   3. Buildings in villages from BD TOPO.
   4. 0.5 m mesh vertices near the road (ditches, rock steps).

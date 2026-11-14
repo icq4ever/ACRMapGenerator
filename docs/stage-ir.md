@@ -28,6 +28,7 @@ per point, `timing` (type, gate, distance), optional `triggers`, and `collision`
 | `respawn` | gate based (`method: gates`) |
 | `collision.glb` | the terrain mesh (light spacing) within 250 m of the exported centreline, positions only, one primitive per surface code |
 | `render/vista.glb` | distant scenery ring (when the `vista` step has run), listed in `render[]` as kind `vista` |
+| `render/ground_bake/` | ground colour from aerial imagery (when the `imagery` step has run): `manifest.json` (schema `ground_bake/1`) and one BC1 DDS per tile. High tier 25 cm/px within 100 m of the road, low tier 1 m/px over the corridor. `stage.json` `ground_bake` has the summary |
 | `pacenotes` | `null` for now (generated on the builder side from geometry) |
 | `objects`, `triggers` | `null` / empty for now |
 
@@ -95,6 +96,7 @@ Summary for this producer:
 | `surface_segments[]` | the longest `surface` picks the menu surface and the vanilla location copied for it | yes (our extension) |
 | `sources.attribution[]` | the location's info-box text ("Corsica. Built from …") | from the manifest |
 | `render/vista.glb` | distant terrain ring | when the `vista` step ran |
+| `render/ground_bake/manifest.json` | ground colour tiles on the collision ground (fork extension) | when the `imagery` step ran |
 | `pacenotes.tokens[]` | co-driver calls (format below); **without them the stage has no calls** | yes (from the centreline) |
 | `objects` | object collision | not yet |
 

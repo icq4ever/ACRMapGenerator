@@ -57,6 +57,7 @@ pyproj's wheels bundle **PROJ 9.8.1** (MIT). Their licence files ship inside the
 |---|---|---|---|
 | Terrain (LiDAR HD MNT) | IGN, via the Géoplateforme WMS-R | Etalab Licence Ouverte 2.0 | © IGN – LiDAR HD (Etalab 2.0) |
 | Roads | OpenStreetMap, via the Overpass API | ODbL 1.0 | © OpenStreetMap contributors |
+| Aerial imagery (BD ORTHO) | IGN, via the Géoplateforme WMS-R | Etalab Licence Ouverte 2.0 | © IGN – BD ORTHO (Etalab 2.0) |
 
 See [docs/licensing.md](docs/licensing.md) for what this means for stages you build.
 

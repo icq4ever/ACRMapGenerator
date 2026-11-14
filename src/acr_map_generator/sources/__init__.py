@@ -5,4 +5,4 @@ To add a provider: create sources/<kind>/<id>.py with a class exposing `info`, `
 module in sources/<kind>/__init__.py. Import order there is auto-selection priority.
 """
 
-from . import roads, terrain  # noqa: F401
+from . import imagery, roads, terrain  # noqa: F401

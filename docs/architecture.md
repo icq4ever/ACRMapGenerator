@@ -29,15 +29,18 @@ src/acr_map_generator/
   sources/<kind>/<provider>.py   one module per data provider, self-registering
     terrain/ign_lidarhd.py       IGN LiDAR HD MNT via Géoplateforme WMS-R
     roads/overpass.py            OSM roads via Overpass
+    imagery/ign_bdortho.py       IGN BD ORTHO aerial imagery (20 cm) via Géoplateforme WMS-R
   process/
     route.py       OSM route guide through the waypoints (internal only)
     corridor.py    0.5 m DTM tiles around the route
     vista.py       25 m DTM ~5 km around the route
+    imagery.py     aerial imagery tiles around the route (two tiers, projected grid, cached JPEG)
     centreline.py  LiDAR road centreline, width, crossfall, bridges
   export/
     terrain_mesh.py  road-adaptive, tiled, crack-free terrain mesh
     stage_ir.py      Stage IR (stage.json, collision.glb), sections, start rule
     vista.py         distant scenery mesh
+    ground_bake.py   ground colour tiles for the IR (render/ground_bake, schema ground_bake/1); dds.py BC1 writer
     package.py       stage package; images.py menu images; gltf.py minimal glb writer
   pipeline.py      ordered build steps with fingerprints (the API for the CLI and a future web UI)
   cli.py           command line
