@@ -419,14 +419,14 @@ thresholds) shifts every later call of the walk onto the next bend, so long link
 token; tokens without a span still use the search. `stage-build` writes `pacenotes-<id>.md` with every call checked
 against the geometry either way (report key `corners_from_ir_span` counts the spans used).
 
-### Menu images (planned, not implemented yet)
+### Menu images (fork extension; logo implemented, tile and art planned)
 
 Optional files in the IR folder. The build uses each one that exists and keeps today's behaviour for the rest. Any size
 is accepted; each image is cover-cropped (centred, aspect kept) to its target. PNG, 8-bit RGB or RGBA.
 
 | file | menu use | target size | when missing |
 |---|---|---|---|
-| `menu/logo.png` | location logo plate (main menu, track select) | 485 x 218, transparent background | generated "RALLY <location>" plate |
+| `menu/logo.png` | location logo plate (main menu, track select). **Implemented**: `gen-ir-spec.ps1` sets `Location.LogoPng` to it (or `-LogoPng <file>`); `scripts/location-logo-png.ps1` clears a white background connected to the border, crops to the logo and fits it (contain, not cover) | 485 x 218, transparent background | generated "RALLY <location>" plate |
 | `menu/tile.png` | location tile (portrait card on the main menu) | 406 x 737 | the vanilla template location's tile |
 | `menu/art.png` | stage backdrop 1325 x 922, variant banner 1720 x 448, lobby thumbnail 170 x 100, all cropped from this one image | at least 1920 x 1080, landscape, no text near the edges | the template stage's (Hafren South) photos |
 

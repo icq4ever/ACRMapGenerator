@@ -30,6 +30,7 @@ param(
     [string]$Template,                          # vanilla DT_TracksLocations row to copy (default: by surface)
     [string]$Tile,                              # vanilla DT_TracksLocationsBackgrounds row (default: the template's)
     [string]$Logo,                              # vanilla DT_TracksLocationsLogos row (default: a generated plate)
+    [string]$LogoPng,                           # own logo image, any size (default: <IR>/menu/logo.png when it exists); fitted by scripts/location-logo-png.ps1
     [string]$LogoColors = '#1F3A93,#FFFFFF',    # generated plate: "<plate>,<stripe>,..."
     [string]$SkySection,                        # config/sky.toml section (default: the host sky as shipped)
     [double]$GroundOffset = 0,
@@ -126,7 +127,10 @@ if (-not $Description) {
 $km = [math]::Round([double]$irJson.length_m / 1000, 3)
 $loc = [ordered]@{ Row = $LocationRow; Template = $Template; Name = $LocationName; Description = $Description }
 if ($Tile) { $loc.Tile = $Tile }
-if ($Logo) { $loc.Logo = $Logo } else { $loc.GenLogo = $true; $loc.LogoColors = $LogoColors }
+if (-not $LogoPng -and (Test-Path (Join-Path $irDir 'menu\logo.png'))) { $LogoPng = Join-Path $irDir 'menu\logo.png' }
+if ($Logo) { $loc.Logo = $Logo }
+elseif ($LogoPng) { $loc.LogoPng = (Resolve-Path $LogoPng).Path }
+else { $loc.GenLogo = $true; $loc.LogoColors = $LogoColors }
 if ($Country) { $loc.Country = $Country }
 $loc.Surface = $Surface
 

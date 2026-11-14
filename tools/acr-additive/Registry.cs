@@ -33,6 +33,7 @@ internal sealed class StageSpec
         public string? Logo;               // new location: vanilla DT_TracksLocationsLogos row; null = generated when GenLogo
         public string? TileArt;            // new location: DR2 loading art (work/dr2/menu-art/.../<TileArt>.tpk) for a generated tile
         public bool GenLogo;               // new location: rally plate logo drawn by scripts/menu-location-logos.ps1 (<logo dir>/<Row>.png)
+        public string? LogoPng;            // new location: own logo image (any size; build.ps1 fits it into <logo dir>/<Row>.png, scripts/location-logo-png.ps1)
         public string? Surface;            // Gravel / Tarmac / Snow: location SurfaceTypesData and every variant's surfaces + tyres (MenuLocations.Surfaces)
         [JsonIgnore] public string Root = DefaultRoot;   // content root of the owning spec (set by Load), for the generated tile / logo
     }

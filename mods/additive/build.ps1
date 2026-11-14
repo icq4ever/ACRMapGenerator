@@ -302,6 +302,16 @@ if (-not $SkipRegistry) {
     $logoDir = Join-Path $work 'location-logos'
     & pwsh -NoProfile -File (Join-Path $root 'scripts\menu-location-logos.ps1') -Specs ($regSpecs -join ';') -Out $logoDir | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'menu-location-logos.ps1 failed' }
+    # own logo images (Location.LogoPng): fitted into the plate, replacing a generated one of the same row
+    $ownLogos = @{}
+    foreach ($f in $regSpecs) {
+        $l = (Get-Content $f -Raw | ConvertFrom-Json).Location
+        if ($l.LogoPng -and $l.Template -and -not $l.Logo -and -not $ownLogos.ContainsKey($l.Row)) { $ownLogos[$l.Row] = $l.LogoPng }
+    }
+    foreach ($row in $ownLogos.Keys) {
+        & pwsh -NoProfile -File (Join-Path $root 'scripts\location-logo-png.ps1') -In $ownLogos[$row] -Out (Join-Path $logoDir "$row.png") | Out-Host
+        if ($LASTEXITCODE -ne 0) { throw "location-logo-png.ps1 failed for $row" }
+    }
     $artDir = Join-Path $root 'work\dr2\menu-art\frontend\streamed_textures\loading'
     # DR2 loading art is read only for generated tiles (Location.TileArt); IR-only registries need no DR2 install
     $needArt = @($regSpecs | ? { (Get-Content $_ -Raw | ConvertFrom-Json).Location.TileArt })

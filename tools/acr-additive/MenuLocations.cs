@@ -37,7 +37,7 @@ internal static class MenuLocations
     {
         if (l.Template is null) yield break;
         if (l.Tile is null && l.TileArt is not null) yield return Tile;
-        if (l.Logo is null && l.GenLogo) yield return Logo;
+        if (l.Logo is null && (l.GenLogo || l.LogoPng is not null)) yield return Logo;
     }
 
     /// One LocationSpec per new location row (every spec of a location carries the same block).
