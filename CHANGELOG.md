@@ -11,6 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Pace notes in the Stage IR (`pacenotes.tokens`), generated from the smoothed LiDAR centreline.
 - Docs: menu image format and layout (`docs/menu-images.md`), the acr-extrastages producer contract.
+- Tool credit in every export (`sources.credit` / `sources.url` in the Stage IR, `producer.credit` / `producer.url`
+  in the package), shown in the ACR location info box; README asks users to keep it.
+- Docs: IGN BD ORTHO attribution in the README and `docs/licensing.md`.
 
 ## [0.1.0] - Unreleased
 

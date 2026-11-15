@@ -13,6 +13,11 @@ from pathlib import Path
 from .area import Area
 from .registry import Provider
 
+# Credit for the tool, written into every export next to the data attribution. Not a licence requirement
+# (the code licence does not cover output); users may remove it, but the README asks them to keep it.
+TOOL_CREDIT = "Made with ACR Map Generator"
+TOOL_URL = "https://github.com/icq4ever/ACRMapGenerator"
+
 
 def _path(area: Area) -> Path:
     return area.data_dir / "manifest.json"

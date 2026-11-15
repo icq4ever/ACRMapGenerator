@@ -18,12 +18,20 @@ their **source data** and of the **stage definition** they were built from.
 | Source | Licence | Obligation |
 |---|---|---|
 | IGN LiDAR HD (terrain) | Etalab Licence Ouverte 2.0 | attribute "© IGN – LiDAR HD (Etalab 2.0)"; commercial use allowed |
+| IGN BD ORTHO (ground colour) | Etalab Licence Ouverte 2.0 | attribute "© IGN – BD ORTHO (Etalab 2.0)"; commercial use allowed |
 | OpenStreetMap (route finding only) | ODbL 1.0 | attribute "© OpenStreetMap contributors"; OSM-derived *data* must stay ODbL |
 
 OSM is used only to locate the route; shipped geometry is measured from LiDAR, and layers derived from OSM are
 flagged `osm_derived` in the manifest and never exported. So a built stage is a produced work that needs the OSM
 attribution but does not have to be released under ODbL. `data/<stage>/manifest.json` lists the attribution per
 stage.
+
+## Crediting the tool
+
+Exports carry a tool credit next to the data attribution: `sources.credit` / `sources.url` in the Stage IR
+(appended to the ACR location info box by the builder) and `producer.credit` / `producer.url` in the package. The
+code licence does not cover output, so this is a request, not an obligation: please keep the credit, or name
+ACR Map Generator with a link to the repository when you publish a stage made with it.
 
 ## Stage definitions (CC BY-SA 4.0)
 

@@ -109,9 +109,15 @@ Everything goes to `data/<stage>/` (not versioned):
 | Roads (route finding only) | OpenStreetMap via Overpass | ODbL |
 | Ground colour (20 cm) | IGN BD ORTHO aerial imagery | Etalab Licence Ouverte 2.0 |
 
-Credit the sources in anything made with this tool: **© IGN – LiDAR HD (Etalab 2.0)** and
-**© OpenStreetMap contributors (ODbL)**. `manifest.json` lists the attribution for each stage.
+Credit the sources in anything made with this tool: **© IGN – LiDAR HD (Etalab 2.0)**,
+**© IGN – BD ORTHO (Etalab 2.0)** (when the imagery step ran) and **© OpenStreetMap contributors (ODbL)**.
+`manifest.json` lists the attribution for each stage.
 Shipped road geometry is measured from LiDAR. OSM is used only to find the route.
+
+**Please credit the tool too.** Exports carry a credit line ("Made with ACR Map Generator", shown in the ACR
+location info box) next to the data attribution. When you publish a stage made with this tool, please keep it, or
+mention ACR Map Generator with a link to this repository in your release notes. The code licence does not require
+this; it is a request.
 
 ## Documentation
 
