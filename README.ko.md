@@ -109,8 +109,13 @@ producers"), [docs/stage-ir.md](docs/stage-ir.md#building-with-acr-extrastages).
 | 지면 색 (20 cm) | IGN BD ORTHO 항공사진 | Etalab Licence Ouverte 2.0 |
 
 이 도구로 만든 결과물에는 출처를 표기해 주세요: **© IGN – LiDAR HD (Etalab 2.0)**,
-**© OpenStreetMap contributors (ODbL)**. 스테이지별 표기 문구는 `manifest.json`에 정리됩니다.
+**© IGN – BD ORTHO (Etalab 2.0)** (imagery 단계를 실행한 경우), **© OpenStreetMap contributors (ODbL)**.
+스테이지별 표기 문구는 `manifest.json`에 정리됩니다.
 배포되는 도로 형상은 LiDAR에서 측정한 것이고, OSM은 경로를 찾는 데만 씁니다.
+
+**도구 표기도 부탁드립니다.** 내보낸 결과물에는 데이터 출처 옆에 도구 표기("Made with ACR Map Generator",
+ACR 로케이션 정보창에 표시)가 들어갑니다. 이 도구로 만든 스테이지를 배포할 때는 이 문구를 남겨 두거나,
+릴리스 노트에 ACR Map Generator와 이 저장소 링크를 적어 주세요. 코드 라이선스상 의무는 아니고 요청입니다.
 
 ## 문서
 

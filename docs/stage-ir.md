@@ -95,6 +95,7 @@ Summary for this producer:
 | `location.country` | flag (ISO 3166 alpha-2) | yes |
 | `surface_segments[]` | the longest `surface` picks the menu surface and the vanilla location copied for it | yes (our extension) |
 | `sources.attribution[]` | the location's info-box text ("Corsica. Built from …") | from the manifest |
+| `sources.credit` | appended to the info box ("… Made with ACR Map Generator.") | yes |
 | `render/vista.glb` | distant terrain ring | when the `vista` step ran |
 | `render/ground_bake/manifest.json` | ground colour tiles on the collision ground (fork extension) | when the `imagery` step ran |
 | `pacenotes.tokens[]` | co-driver calls (format below); **without them the stage has no calls** | yes (from the centreline) |

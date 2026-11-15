@@ -122,6 +122,8 @@ if (-not $Template) { $Template = @{ Tarmac = 'Alsace'; Gravel = 'Wales'; Snow =
 if (-not $Description) {
     $attr = @($irJson.sources.attribution | ? { $_ })
     $Description = if ($attr) { "$locFull. Built from $($attr -join ', ')." } else { "$locFull." }
+    $credit = [string]$irJson.sources.credit
+    if ($credit) { $Description += " $($credit.TrimEnd('.'))." }
 }
 
 $km = [math]::Round([double]$irJson.length_m / 1000, 3)

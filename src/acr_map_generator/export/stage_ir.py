@@ -395,6 +395,8 @@ def export_stage_ir(
             "producer": f"acr-map-generator {version('acr-map-generator')}",
             "stage": stage.name,
             "attribution": manifest.attributions(area),
+            "credit": manifest.TOOL_CREDIT,
+            "url": manifest.TOOL_URL,
             "section_m": [start, finish],
             "requested_start_m": requested,
         },

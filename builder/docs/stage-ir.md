@@ -388,13 +388,14 @@ ACRMapGenerator): which keys the build reads, which it ignores, and what it expe
 | `location.country` | flag and "Nation": an ISO 3166 alpha-2 code (`FR`) or an English country name, matched to a vanilla `DT_Countries` row | the template location's flag |
 | `surface_segments[]` | `{from, to, surface}`: the longest `surface` picks the menu surface (asphalt / tarmac / concrete / paved -> Tarmac, snow / ice -> Snow, else Gravel) and the vanilla location copied for it (Alsace / Livigno / Wales) | Gravel |
 | `sources.attribution[]` | the location's info-box text ("<location.name>. Built from <attribution>.") | `location.name` |
+| `sources.credit` | appended to the info-box text ("... <credit>."), e.g. the producer tool's credit line | nothing appended |
 | the file `render/vista.glb` (listed in `render[]` as `kind: "vista"`) | distant terrain ring (`--visuals-vista 1`) | no vista |
 | the file `render/ground_bake/manifest.json` (schema `ground_bake/1`, as in "ground_bake" above; **fork extension** for IRs) | ground colour: one BC1 texture and M_Simple MIC per tile on the collision ground, tile UVs; ground over no tile keeps the `[textured]` terrain material. Any top-down colour source works (ACRMapGenerator: aerial imagery) | `[textured]` terrain material everywhere |
 | `pacenotes.tokens[]` | co-driver calls, see below | the host pace note table is emptied (no calls) |
 | `objects` | object collision (`config/object-collision.toml`) | none |
 
 Ignored by the build (kept for the producer's own use): `structures`, `surface_segments` beyond the menu surface,
-`validation`, `sources` beyond `attribution`, `location.id` / `archive` / `route_index`, `triggers`.
+`validation`, `sources` beyond `attribution` and `credit`, `location.id` / `archive` / `route_index`, `triggers`.
 
 ### pacenotes for non-DR2 IRs
 

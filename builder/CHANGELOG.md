@@ -9,6 +9,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- IR `sources.credit` is appended to the location info-box text.
 - Every DiRT Rally 2.0 stage that fits (106 of 156, start to finish at most 9 km) can be built.
   The launcher still starts with the recommended 30. In Choose stages, `all` selects every stage
   that fits and `default` restores the 30. The 50 longer stages are listed and cannot be built.
